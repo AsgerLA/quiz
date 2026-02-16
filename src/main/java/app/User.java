@@ -5,14 +5,14 @@ import lombok.ToString;
 
 import java.time.Instant;
 
+@ToString
 @Entity
 @Table(name = "users")
-@ToString
 class User
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer id;
+    Long id;
 
     String name;
     byte[] password;
@@ -20,12 +20,12 @@ class User
 
     Instant created;
 
-    @Column(name="last_login")
     Instant lastLogin;
 
-    @PostPersist
-    void postPersist()
+    @PrePersist
+    void prePersist()
     {
         created = Instant.now();
     }
 }
+

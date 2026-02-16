@@ -19,18 +19,17 @@ class HibernateConfig
 
     static void registerEntities(Configuration configuration) {
         configuration.addAnnotatedClass(User.class);
+        configuration.addAnnotatedClass(Question.class);
+        configuration.addAnnotatedClass(QuestionAnswer.class);
+        configuration.addAnnotatedClass(QuestionCategory.class);
+        configuration.addAnnotatedClass(Quiz.class);
+        configuration.addAnnotatedClass(QuizQuestion.class);
+        configuration.addAnnotatedClass(QuizTag.class);
+        configuration.addAnnotatedClass(Tag.class);
         // TODO: Add more entities here...
     }
 
-    private static void loadProps(Properties props, String filename)
-            throws IOException
-    {
-        try (InputStream is = HibernateConfig.class.getClassLoader().getResourceAsStream(filename)) {
-            props.load(is);
-        }
-    }
-
-    static EntityManagerFactory createEntityManagerFactory(String config)
+    static EntityManagerFactory createEntityManagerFactory()
     {
         EntityManagerFactory emf;
         try {
@@ -43,7 +42,7 @@ class HibernateConfig
             props.put("hibernate.hikari.maximumPoolSize", "10");
             props.put("hibernate.hikari.minimumIdle", "2");
             props.put("hibernate.hikari.connectionTimeout", "20000");
-            props.put("hibernate.generate_statistics", "false");
+            props.put("hibernate.generate_statistics", "true");
             props.put("hibernate.hbm2ddl.auto", "create");
 
             Properties dbprops = new Properties();
@@ -56,8 +55,6 @@ class HibernateConfig
             props.setProperty("hibernate.connection.username", username);
             props.setProperty("hibernate.connection.password", password);
             props.setProperty("hibernate.connection.url", url);
-            if (config != null)
-                loadProps(props, config);
 
             Configuration configuration = new Configuration();
             configuration.setProperties(props);
