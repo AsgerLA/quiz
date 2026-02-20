@@ -1,24 +1,24 @@
-package app;
+package app.persistence;
 
 import jakarta.persistence.*;
 
 import java.util.Objects;
 
 @Entity
-class QuizTag
+public class QuizTag
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    public Long id;
 
     @ManyToOne
-    Quiz quiz;
+    public Quiz quiz;
 
     @ManyToOne
-    Tag tag;
+    public Tag tag;
 
-    QuizTag() {}
-    QuizTag(Quiz quiz, Tag tag)
+    public QuizTag() {}
+    public QuizTag(Quiz quiz, Tag tag)
     {
         this.quiz = quiz;
         this.tag = tag;
@@ -29,12 +29,12 @@ class QuizTag
     {
         if (o == null || getClass() != o.getClass()) return false;
         QuizTag quizTag = (QuizTag) o;
-        return Objects.equals(id, quizTag.id) && Objects.equals(quiz.id, quizTag.quiz.id) && Objects.equals(tag.id, quizTag.tag.id);
+        return Objects.equals(id, quizTag.id) && Objects.equals(quiz.id, quizTag.quiz.id) && Objects.equals(tag.name, quizTag.tag.name);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, quiz.id, tag.id);
+        return Objects.hash(id, quiz.id, tag.name);
     }
 }

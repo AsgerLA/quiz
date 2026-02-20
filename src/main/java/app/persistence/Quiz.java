@@ -1,4 +1,4 @@
-package app;
+package app.persistence;
 
 import jakarta.persistence.*;
 
@@ -7,41 +7,41 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-class Quiz
+public class Quiz
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    public Long id;
 
-    String title;
-    String description;
+    public String title;
+    public String description;
 
-    Instant created;
-    Instant updated;
+    public Instant created;
+    public Instant updated;
 
     @ManyToOne
-    User createdBy;
+    public User createdBy;
 
     @OneToMany(mappedBy = "quiz", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    Set<QuizQuestion> questions = new HashSet<>();
+    public Set<Question> questions = new HashSet<>();
 
     @OneToMany(mappedBy = "quiz", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    Set<QuizTag> quiztags = new HashSet<>();
+    public Set<QuizTag> quiztags = new HashSet<>();
 
-    Quiz() {}
-    Quiz(String title, String description)
+    public Quiz() {}
+    public Quiz(String title, String description)
     {
         this.title = title;
         this.description = description;
     }
 
-    void addQuestion(Question question)
+    public void addQuestion(Question question)
     {
-        QuizQuestion qq = new QuizQuestion(this, question);
-        questions.add(qq);
+        question.quiz = this;
+        questions.add(question);
     }
 
-    void addTag(Tag tag)
+    public void addTag(Tag tag)
     {
         QuizTag qt = new QuizTag(this, tag);
         quiztags.add(qt);

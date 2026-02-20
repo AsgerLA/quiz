@@ -1,4 +1,4 @@
-package app;
+package app.persistence;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -6,16 +6,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-class QuestionCategory
+public class QuestionCategory
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    public Long id;
 
-    String name;
+    public String name;
 
-    QuestionCategory() {}
-    QuestionCategory(String name)
+    public QuestionCategory() {}
+    public QuestionCategory(String name)
     {
         this.name = name;
     }

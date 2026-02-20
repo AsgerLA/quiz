@@ -1,5 +1,6 @@
 package app;
 
+import app.persistence.*;
 import jakarta.persistence.EntityManagerFactory;
 
 import java.util.Random;
@@ -12,16 +13,21 @@ class TestData
 
     static User[] users = new User[1];
     static Quiz[] quizzes = new Quiz[NUM_QUIZZES];
+    static Tag[] tags = new Tag[1];
 
     static void populate(EntityManagerFactory emf)
     {
         Random rand = new Random();
+
+        tags[0] = new Tag("test");
+        DAO.save(emf, tags[0]);
 
         for (int quizIndex = 0;
              quizIndex < NUM_QUIZZES;
              quizIndex++) {
             quizzes[quizIndex] = new Quiz("Test Quiz", "Quiz used for testing");
             Quiz quiz = quizzes[quizIndex];
+            quiz.addTag(tags[0]);
 
             int numQuestions = rand.nextInt(MIN_QUESTIONS, MAX_QUESTIONS);
             for (int questionIndex = 0;

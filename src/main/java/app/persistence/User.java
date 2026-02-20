@@ -1,26 +1,24 @@
-package app;
+package app.persistence;
 
 import jakarta.persistence.*;
-import lombok.ToString;
 
 import java.time.Instant;
 
-@ToString
 @Entity
 @Table(name = "users")
-class User
+public class User
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    public Long id;
 
-    String name;
+    public String name;
     byte[] password;
     byte[] salt;
 
-    Instant created;
+    public Instant created;
 
-    Instant lastLogin;
+    public Instant lastLogin;
 
     @PrePersist
     void prePersist()

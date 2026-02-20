@@ -1,0 +1,21 @@
+{
+  "title" : "Test Quiz",
+  "description" : "Quiz used for testing",
+  "tags" : [ "test", "quiz" ],
+  "questions" : [
+    {
+      "question" : "question",
+      "category" : "test",
+      "answers" : [
+        {
+          "answer" : "answer1",
+          "points" : 1
+        },
+        {
+          "answer" : "answer2",
+          "points" : 0
+        }
+      ]
+    }
+  ]
+}

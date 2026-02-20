@@ -1,4 +1,4 @@
-package app;
+package app.persistence;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -7,29 +7,27 @@ import org.hibernate.service.ServiceRegistry;
 import jakarta.persistence.EntityManagerFactory;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-class HibernateConfig
+public class HibernateConfig
 {
 
     private HibernateConfig() {
     }
 
-    static void registerEntities(Configuration configuration) {
+    private static void registerEntities(Configuration configuration) {
         configuration.addAnnotatedClass(User.class);
         configuration.addAnnotatedClass(Question.class);
         configuration.addAnnotatedClass(QuestionAnswer.class);
         configuration.addAnnotatedClass(QuestionCategory.class);
         configuration.addAnnotatedClass(Quiz.class);
-        configuration.addAnnotatedClass(QuizQuestion.class);
         configuration.addAnnotatedClass(QuizTag.class);
         configuration.addAnnotatedClass(Tag.class);
         // TODO: Add more entities here...
     }
 
-    static EntityManagerFactory createEntityManagerFactory()
+    public static EntityManagerFactory createEntityManagerFactory()
     {
         EntityManagerFactory emf;
         try {

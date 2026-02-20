@@ -1,37 +1,39 @@
-package app;
+package app.persistence;
 
 import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
-class Question
+public class Question
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    public Long id;
 
-    String question;
+    public String question;
 
-    Instant created;
+    public Instant created;
+
+    @ManyToOne
+    public Quiz quiz;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    QuestionCategory category;
+    public QuestionCategory category;
 
     @OneToMany(mappedBy = "question", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    Set<QuestionAnswer> answers = new HashSet<>();
+    public Set<QuestionAnswer> answers = new HashSet<>();
 
-    Question() {}
-    Question(String question, QuestionCategory category)
+    public Question() {}
+    public Question(String question, QuestionCategory category)
     {
         this.question = question;
         this.category = category;
     }
 
-    void addAnswer(QuestionAnswer answer)
+    public void addAnswer(QuestionAnswer answer)
     {
         answers.add(answer);
         answer.question = this;

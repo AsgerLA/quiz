@@ -1,5 +1,8 @@
 package app;
 
+import app.persistence.DAO;
+import app.persistence.User;
+import app.service.*;
 import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
@@ -9,7 +12,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +26,7 @@ class DAOTest
     @BeforeAll
     static void beforeAll()
     {
-        emf = HibernateConfig.createEntityManagerFactory();
+        emf = Service.getEntityManagerFactory();//HibernateConfig.createEntityManagerFactory();
 
         TestData.populate(emf);
     }
@@ -48,58 +53,35 @@ class DAOTest
         assertNotNull(DAO.signin(emf, username, password));
     }
 
-    /**
-     * Create new quiz as user.
-     * Add new tag for quiz
-     * Load the quiz and questions
-     */
     @Test
     void createQuiz()
+            throws IOException
     {
-        final int NUM_QUESTIONS = 10;
         User user = TestData.users[0];
+        final String JSON = Files.readString(Path.of("create_quiz.json"));
+        QuizDTO expected = Service.jsonToObject(JSON, QuizDTO.class);
 
-        // add new quiz to DB
-        Quiz quiz = new Quiz("Test Quiz", "Quiz used for testing");
-        quiz.createdBy = user;
-
-        Tag tag = new Tag("test");
-        quiz.addTag(tag);
-        quiz.addTag(tag);
-
-        Question[] expected = new Question[NUM_QUESTIONS];
-
-        for (int questionIndex = 0;
-             questionIndex < NUM_QUESTIONS;
-             questionIndex++) {
-            expected[questionIndex] = new Question("question "+questionIndex, null);
-
-            Question q = expected[questionIndex];
-            q.addAnswer(new QuestionAnswer("answer1", 1));
-            q.addAnswer(new QuestionAnswer("answer2", 0));
-            quiz.addQuestion(q);
-        }
-
-        DAO.saveQuiz(emf, quiz);
-        assertNotNull(quiz.id);
-
-        // load quiz from DB
-        // NOTE: the load order is not the same as save
-        quiz = DAO.load(emf, Quiz.class, quiz.id);
-        assertNotNull(quiz);
-        Question[] actual = DAO.loadQuestions(emf, quiz.id).toArray(new Question[0]);
-        assertEquals(expected.length, actual.length);
+        IService service = Service.getService();
+        Long quizId = service.createQuiz(user.id, expected);
+        assertNotNull(quizId);
+        expected.id = quizId;
+        QuizDTO actual = service.loadQuiz(quizId);
+        assertEquals(expected, actual);
     }
 
     @Test
-    void quizzes()
+    void playQuiz()
     {
-        final int PAGE_SIZE = TestData.NUM_QUIZZES/2;
-        int pageNum = 0;
+        IService service = Service.getService();
 
-        List<Quiz> quizzes = DAO.loadQuizzes(emf, pageNum, PAGE_SIZE);
-        assertNotNull(quizzes);
-        assertEquals(PAGE_SIZE, quizzes.size());
+        // user opens home page
+        PageDTO<QuizDTO> page = service.loadQuizPage(0);
+
+        // user picks a quiz
+        Long quizId = page.results[0].id;
+
+        // load quiz with questions into a session
+        QuizDTO quiz = service.loadQuiz(quizId);
+        assertNotEquals(0, quiz.questions.length);
     }
-
 }
