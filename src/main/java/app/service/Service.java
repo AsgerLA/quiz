@@ -6,18 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManagerFactory;
 
 public final class Service
-    extends ServiceQuiz
-    implements IService
 {
 
     private Service(){
     }
 
-    private static final Service instance = new Service();
-    public static Service getService()
-    {
-        return instance;
-    }
+    public static IService.Quiz quiz = new ServiceQuiz();
+    public static IService.User user = new ServiceUser();
 
     // TODO: persistence interface
     static final EntityManagerFactory emf;

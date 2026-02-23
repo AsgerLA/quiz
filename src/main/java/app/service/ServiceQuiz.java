@@ -5,7 +5,11 @@ import app.persistence.*;
 import java.util.List;
 
 public class ServiceQuiz
+        implements IService.Quiz
 {
+    ServiceQuiz() {
+    }
+
     public Long createQuiz(Long userId, QuizDTO quizDTO)
     {
         Quiz quiz = new Quiz();

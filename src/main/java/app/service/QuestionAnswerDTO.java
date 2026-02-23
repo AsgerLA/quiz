@@ -8,4 +8,11 @@ public class QuestionAnswerDTO
     public String answer;
     @JsonProperty("points")
     public  int points;
+
+    public QuestionAnswerDTO() {}
+    public QuestionAnswerDTO(String answer, int points)
+    {
+        this.answer = answer;
+        this.points = points;
+    }
 }
