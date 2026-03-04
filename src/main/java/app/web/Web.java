@@ -3,18 +3,13 @@ package app.web;
 import app.db.*;
 import io.javalin.Javalin;
 
-class Web
+public class Web
 {
-    static DBContext db;
+    static DBContext db = null;
 
-    public static void main(String[] args)
-            throws DBException
+    public static Javalin newJavalinApp(DBContext db)
     {
-        String username = System.getenv("DB_USERNAME");
-        String password = System.getenv("DB_PASSWORD");
-        String url      = System.getenv("DB_URL");
-        db = new DBContext(username, password, url);
-
+        Web.db = db;
         Javalin app = Javalin.create(config -> {
             config.routes.apiBuilder(WebQuiz.routes());
             config.routes.exception(Exception.class, (e, ctx) -> {
@@ -27,7 +22,6 @@ class Web
             });
         });
 
-        app.start("127.0.0.1", 7070);
-
+        return app;
     }
 }

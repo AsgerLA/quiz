@@ -11,10 +11,10 @@ import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
  * Base DB test.
  * Custom junit extension
  */
-class DBTest
+public class DBTest
         implements BeforeAllCallback, AutoCloseable
 {
-    static DBContext db;
+    public static DBContext db;
 
     private static boolean started = false;
 

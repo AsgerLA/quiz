@@ -46,6 +46,12 @@
             <version>${javalin-version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>io.javalin</groupId>
+            <artifactId>javalin-testtools</artifactId>
+            <version>${javalin-version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <!--  TESTING      -->
         <dependency>

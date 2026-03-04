@@ -11,8 +11,9 @@ public class JsonBuilder
 
     public void objectBegin(String key)
     {
+        sb.append('"');
         sb.append(key);
-        sb.append(":{");
+        sb.append("\":{");
     }
 
     public void field(String key, Object value)
@@ -53,8 +54,7 @@ public class JsonBuilder
 
     public void objectEnd()
     {
-        if (sb.charAt(sb.length()-1) != '{')
-            sb.setLength(sb.length()-1);
+        sb.setLength(sb.length()-1);
         sb.append("},");
     }
 
@@ -65,33 +65,15 @@ public class JsonBuilder
 
     public void arrayBegin(String key)
     {
+        sb.append('"');
         sb.append(key);
-        sb.append(":[");
+        sb.append("\":[");
     }
 
     public void arrayEnd()
     {
-        if (sb.charAt(sb.length()-1) != '[')
-            sb.setLength(sb.length()-1);
+        sb.setLength(sb.length()-1);
         sb.append("],");
-    }
-
-    public void key(String key)
-    {
-        sb.append(key);
-        sb.append(':');
-    }
-
-    public void value(Object value)
-    {
-        sb.append(value);
-        sb.append(',');
-    }
-
-    public void append(String json)
-    {
-        sb.append(json);
-        sb.append(',');
     }
 
     public String build()

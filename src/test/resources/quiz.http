@@ -1,0 +1,30 @@
+@baseurl = http://localhost:7070
+
+### GET_quiz
+GET {{baseurl}}/quiz/1
+
+### POST_quiz
+POST {{baseurl}}/quiz
+
+{
+    "title" : "Test Quiz",
+    "questions" : [
+        {
+            "categoryId" : 1,
+            "slot" : 0,
+            "question" : "Question?",
+            "answers" : [
+                {
+                    "slot" : 0,
+                    "answer" : "true",
+                    "points" : 1
+                },
+                {
+                    "slot" : 1,
+                    "answer" : "false",
+                    "points" : 0
+                }
+            ]
+        }
+    ]
+}

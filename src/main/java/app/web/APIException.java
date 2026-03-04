@@ -3,9 +3,16 @@ package app.web;
 class APIException extends Exception
 {
     int code;
-    public APIException(int code, Exception e)
+
+    APIException(int code, Exception e)
     {
         super(e);
+        this.code = code;
+    }
+
+    APIException(int code, String message)
+    {
+        super(message);
         this.code = code;
     }
 }
