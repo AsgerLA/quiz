@@ -1,6 +1,5 @@
-package app;
+package app.db;
 
-import app.service.Service;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
@@ -9,13 +8,13 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 /**
- * Base service test.
+ * Base DB test.
  * Custom junit extension
  */
-class ServiceTest
+class DBTest
         implements BeforeAllCallback, AutoCloseable
 {
-    private static EntityManagerFactory emf;
+    static DBContext db;
 
     private static boolean started = false;
 
@@ -27,22 +26,25 @@ class ServiceTest
             return;
         started = true;
 
-        emf = Service.getEntityManagerFactory();
-        TestData.populate(emf);
+        String username = System.getenv("DB_USERNAME");
+        String password = System.getenv("DB_PASSWORD");
+        String url      = System.getenv("DB_URL");
+        db = new DBContext(username, password, url);
+        TestData.populate(db);
 
         // register callback
-        context.getRoot().getStore(GLOBAL).put("ServiceTest", this);
+        context.getRoot().getStore(GLOBAL).put("DBTest", this);
     }
 
     @Override
     public void close()
     {
         // print hibernate metrics
+        EntityManagerFactory emf = db.emf;
         SessionFactory sf = emf.unwrap(SessionFactory.class);
         Statistics stats = sf.getStatistics();
         System.out.println(stats.toString());
 
-        if (emf != null)
-            emf.close();
+        emf.close();
     }
 }
