@@ -21,6 +21,31 @@ public class JsonBuilder
         sb.append('"');
         sb.append(key);
         sb.append("\":");
+        value(value);
+    }
+
+    public void field(String key, String value)
+    {
+        sb.append('"');
+        sb.append(key);
+        sb.append("\":");
+        value(value);
+    }
+
+    public void objectEnd()
+    {
+        if (sb.charAt(sb.length()-1) != '{')
+            sb.setLength(sb.length()-1);
+        sb.append("},");
+    }
+
+    public void arrayBegin()
+    {
+        sb.append('[');
+    }
+
+    public void value(Object value)
+    {
         if (value == null) {
             sb.append("null");
         } else {
@@ -29,11 +54,8 @@ public class JsonBuilder
         sb.append(',');
     }
 
-    public void field(String key, String value)
+    public void value(String value)
     {
-        sb.append('"');
-        sb.append(key);
-        sb.append("\":");
         if (value == null) {
             sb.append("null");
         } else {
@@ -52,17 +74,6 @@ public class JsonBuilder
         sb.append(',');
     }
 
-    public void objectEnd()
-    {
-        sb.setLength(sb.length()-1);
-        sb.append("},");
-    }
-
-    public void arrayBegin()
-    {
-        sb.append('[');
-    }
-
     public void arrayBegin(String key)
     {
         sb.append('"');
@@ -72,7 +83,8 @@ public class JsonBuilder
 
     public void arrayEnd()
     {
-        sb.setLength(sb.length()-1);
+        if (sb.charAt(sb.length()-1) != '[')
+            sb.setLength(sb.length()-1);
         sb.append("],");
     }
 
@@ -81,11 +93,4 @@ public class JsonBuilder
         sb.setLength(sb.length()-1);
         return sb.toString();
     }
-
-    @Override
-    public String toString()
-    {
-        return sb.toString();
-    }
-
 }

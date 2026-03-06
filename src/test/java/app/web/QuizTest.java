@@ -1,7 +1,6 @@
 package app.web;
 
 import app.db.DBTest;
-import app.web.json.JsonObject;
 import app.web.json.JsonParser;
 import io.javalin.Javalin;
 import io.javalin.testtools.JavalinTest;

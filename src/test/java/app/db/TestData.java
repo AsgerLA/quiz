@@ -15,8 +15,10 @@ public class TestData
     {
         Random rand = new Random();
 
-        // add common data
-        Category category = new Category("Test");
+        Tag tag = new Tag("test");
+        Tag.save(db, tag);
+
+        Category category = new Category(tag);
         Category.save(db, category);
 
         for (int quizIndex = 0;
@@ -37,6 +39,7 @@ public class TestData
                 quiz.questions.add(q);
             }
 
+            quiz.tags.add(tag);
             Quiz.save(db, quiz);
         }
     }

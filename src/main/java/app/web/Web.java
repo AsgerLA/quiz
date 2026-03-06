@@ -1,17 +1,17 @@
 package app.web;
 
-import app.db.*;
+import app.db.DBContext;
 import io.javalin.Javalin;
 
 public class Web
 {
-    static DBContext db = null;
 
     public static Javalin newJavalinApp(DBContext db)
     {
-        Web.db = db;
         Javalin app = Javalin.create(config -> {
-            config.routes.apiBuilder(WebQuiz.routes());
+            // routes
+            config.routes.apiBuilder(WebQuiz.routes(db));
+            // exception handling
             config.routes.exception(Exception.class, (e, ctx) -> {
                 e.printStackTrace();
                 ctx.status(500);

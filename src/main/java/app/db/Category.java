@@ -14,13 +14,14 @@ public class Category
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer id;
 
-    @Column(nullable = false)
-    public String name;
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    public Tag tag;
 
     public Category() {}
-    public Category(String name)
+    public Category(Tag tag)
     {
-        this.name = name;
+        this.tag = tag;
     }
 
     @Override

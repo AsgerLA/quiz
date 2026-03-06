@@ -1,30 +1,40 @@
 package app.web;
 
-import io.javalin.apibuilder.EndpointGroup;
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
-import static io.javalin.apibuilder.ApiBuilder.put;
-import static io.javalin.apibuilder.ApiBuilder.delete;
-import io.javalin.http.Context;
 
-import app.db.*;
-import app.web.json.*;
+import app.db.DBContext;
+import io.javalin.apibuilder.EndpointGroup;
+import io.javalin.http.Context;
 
 class WebQuiz
 {
-    static EndpointGroup routes()
+    private static DBContext db;
+
+    static EndpointGroup routes(DBContext db)
     {
-        return () ->{
+        WebQuiz.db = db;
+        return () -> {
+            get("/quizlist", WebQuiz::GET_quizlist);
             post("/quiz", WebQuiz::POST_quiz);
             get("/quiz/{id}", WebQuiz::GET_quiz);
         };
     }
 
+    static void GET_quizlist(Context ctx)
+            throws APIException
+    {
+        String tagname;
+
+        tagname = ctx.queryParam("tag");
+        ctx.json(ApiQuiz.getlist(db, tagname));
+    }
+
     static void POST_quiz(Context ctx)
             throws APIException
     {
-        ApiQuiz.post(Web.db, ctx.body());
-        ctx.status(200);
+        ApiQuiz.post(db, ctx.body());
+        ctx.status(201);
     }
 
     static void GET_quiz(Context ctx)
@@ -34,8 +44,7 @@ class WebQuiz
         String json;
 
         id = Integer.parseInt(ctx.pathParam("id"));
-
-        json = ApiQuiz.get(Web.db, id);
+        json = ApiQuiz.get(db, id);
 
         ctx.json(json);
     }

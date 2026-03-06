@@ -7,19 +7,54 @@ import java.util.List;
 
 class ApiQuiz
 {
+    static String getlist(DBContext db, String tagname)
+        throws APIException
+    {
+        try {
+            JsonBuilder jb = new JsonBuilder();
+            List<Quiz> quizzes;
+
+            quizzes = Quiz.loadTop10ByTag(db, tagname);
+            jb.arrayBegin();
+            for (Quiz quiz : quizzes) {
+                jb.objectBegin();
+                jb.field("id", quiz.id);
+                jb.field("title", quiz.title);
+                jb.arrayBegin("tags");
+                for (Tag tag : quiz.tags)
+                    jb.value(tag.name);
+                jb.arrayEnd();
+                jb.objectEnd();
+            }
+            jb.arrayEnd();
+
+            return jb.build();
+        } catch (DBException e) {
+            throw new APIException(500, e);
+        }
+    }
+
     static void post(DBContext db, String json)
             throws APIException
     {
         JsonObject jo;
         JsonArray ja;
+        int i;
 
         try {
             jo = JsonParser.decodeObject(json);
 
             Quiz quiz = new Quiz(jo.getString("title"));
 
+            ja = jo.getJsonArray("tags");
+            for (i = 0; i < ja.size(); i++) {
+                Tag tag = new Tag(ja.getString(i));
+                quiz.tags.add(tag);
+                Tag.save(db, tag);
+            }
+
             ja = jo.getJsonArray("questions");
-            for (int i = 0; i < ja.size(); i++) {
+            for (i = 0; i < ja.size(); i++) {
                 JsonObject tmp = ja.getJsonObject(i);
                 Category cat = Category.load(db, tmp.getInt("categoryId"));
                 Question question = new Question(

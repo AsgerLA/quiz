@@ -16,5 +16,6 @@ public class Main
         DBContext db = new DBContext(username, password, url);
         Javalin app = Web.newJavalinApp(db);
         app.start("127.0.0.1", 7070);
+        System.out.println("http://localhost:7070");
     }
 }
