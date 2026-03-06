@@ -2,6 +2,7 @@ package app.web;
 
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
+import static io.javalin.apibuilder.ApiBuilder.put;
 
 import app.db.DBContext;
 import io.javalin.apibuilder.EndpointGroup;
@@ -17,6 +18,7 @@ class WebQuiz
         return () -> {
             get("/quizlist", WebQuiz::GET_quizlist);
             post("/quiz", WebQuiz::POST_quiz);
+            put("/quiz/", WebQuiz::PUT_quiz);
             get("/quiz/{id}", WebQuiz::GET_quiz);
         };
     }
@@ -27,6 +29,10 @@ class WebQuiz
         String tagname;
 
         tagname = ctx.queryParam("tag");
+        if (tagname == null) {
+            ctx.status(400);
+            return;
+        }
         ctx.json(ApiQuiz.getlist(db, tagname));
     }
 
@@ -35,6 +41,13 @@ class WebQuiz
     {
         ApiQuiz.post(db, ctx.body());
         ctx.status(201);
+    }
+
+    static void PUT_quiz(Context ctx)
+            throws APIException
+    {
+        ApiQuiz.put(db, ctx.body());
+        ctx.status(200);
     }
 
     static void GET_quiz(Context ctx)

@@ -21,9 +21,6 @@ public class Question
     @Column(nullable = false)
     public int slot;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    public Category category;
-
     @OneToMany(mappedBy = "question", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     public Set<Answer> answers = new HashSet<>();
 
@@ -31,11 +28,10 @@ public class Question
     Quiz quiz;
 
     public Question() {}
-    public Question(Quiz quiz, String question, Category category, int slot)
+    public Question(Quiz quiz, String question, int slot)
     {
         this.quiz = quiz;
         this.question = question;
-        this.category = category;
         this.slot = slot;
     }
 
@@ -45,10 +41,10 @@ public class Question
         return slot;
     }
 
-    public static List<Question> loadByQuizId(DBContext ctx, int quizId)
+    public static List<Question> loadByQuizId(DBContext db, int quizId)
             throws DBException
     {
-        EntityManager em = ctx.emf.createEntityManager();
+        EntityManager em = db.emf.createEntityManager();
         try {
             String JPQL = "SELECT q FROM Question q WHERE q.quiz.id = :quizId";
             TypedQuery<Question> q = em.createQuery(JPQL, Question.class);

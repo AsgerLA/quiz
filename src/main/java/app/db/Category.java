@@ -32,12 +32,12 @@ public class Category
 
     private static final Set<Category> cache = Collections.synchronizedSet(new HashSet<>());
 
-    public static void save(DBContext ctx, Category category)
+    public static void save(DBContext db, Category category)
             throws DBException
     {
         if (cache.isEmpty())
-            cache.addAll(loadAll(ctx));
-        EntityManager em = ctx.emf.createEntityManager();
+            cache.addAll(loadAll(db));
+        EntityManager em = db.emf.createEntityManager();
         try {
             em.getTransaction().begin();
             em.persist(category);
@@ -52,13 +52,13 @@ public class Category
         }
     }
 
-    public static void delete(DBContext ctx, Category category)
+    public static void delete(DBContext db, Category category)
             throws DBException
     {
         if (cache.isEmpty()) {
-            cache.addAll(loadAll(ctx));
+            cache.addAll(loadAll(db));
         }
-        EntityManager em = ctx.emf.createEntityManager();
+        EntityManager em = db.emf.createEntityManager();
         try {
             em.getTransaction().begin();
             em.persist(category);
@@ -73,11 +73,11 @@ public class Category
         }
     }
 
-    public static Category load(DBContext ctx, int id)
+    public static Category load(DBContext db, int id)
             throws DBException
     {
         if (cache.isEmpty())
-            cache.addAll(loadAll(ctx));
+            cache.addAll(loadAll(db));
         Iterator<Category> it = cache.iterator();
         Category cat;
         while (it.hasNext()) {
@@ -88,13 +88,13 @@ public class Category
         return null;
     }
 
-    public static Set<Category> loadAll(DBContext ctx)
+    public static Set<Category> loadAll(DBContext db)
             throws DBException
     {
         if (!cache.isEmpty()) {
             return cache;
         }
-        EntityManager em = ctx.emf.createEntityManager();
+        EntityManager em = db.emf.createEntityManager();
         try {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Category> cq = cb.createQuery(Category.class);

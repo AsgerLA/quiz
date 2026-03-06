@@ -30,7 +30,7 @@ public class Quiz
     @Column(nullable = false)
     public String title;
 
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
     public Set<Question> questions = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -43,11 +43,13 @@ public class Quiz
         this.title = title;
     }
 
-    public static void save(DBContext ctx, Quiz quiz)
+    public static void save(DBContext db, Quiz quiz)
             throws DBException
     {
-        EntityManager em = ctx.emf.createEntityManager();
+        EntityManager em = db.emf.createEntityManager();
         try {
+            for (Tag tag : quiz.tags)
+                Tag.save(db, tag);
             em.getTransaction().begin();
             em.persist(quiz);
             em.getTransaction().commit();
@@ -60,10 +62,29 @@ public class Quiz
         }
     }
 
-    public static Quiz load(DBContext ctx, int id)
+    public static void update(DBContext db, Quiz quiz)
             throws DBException
     {
-        EntityManager em = ctx.emf.createEntityManager();
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            for (Tag tag : quiz.tags)
+                Tag.save(db, tag);
+            em.getTransaction().begin();
+            em.merge(quiz);
+            em.getTransaction().commit();
+        } catch (PersistenceException e) {
+            if (em.getTransaction().isActive())
+                em.getTransaction().rollback();
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    public static Quiz load(DBContext db, int id)
+            throws DBException
+    {
+        EntityManager em = db.emf.createEntityManager();
         try {
             return em.find(Quiz.class, id);
         } catch (PersistenceException e) {
@@ -75,10 +96,10 @@ public class Quiz
         }
     }
 
-    public static List<Quiz> loadAll(DBContext ctx)
+    public static List<Quiz> loadAll(DBContext db)
             throws DBException
     {
-        EntityManager em = ctx.emf.createEntityManager();
+        EntityManager em = db.emf.createEntityManager();
         try {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Quiz> cq = cb.createQuery(Quiz.class);
@@ -95,10 +116,10 @@ public class Quiz
         }
     }
 
-    public static List<Quiz> loadTop10ByTag(DBContext ctx, String name)
+    public static List<Quiz> loadTop10ByTag(DBContext db, String name)
             throws DBException
     {
-        EntityManager em = ctx.emf.createEntityManager();
+        EntityManager em = db.emf.createEntityManager();
         try {
             String JPQL = "SELECT q FROM Quiz q JOIN q.tags t WHERE t.name = :name";
             TypedQuery<Quiz> q = em.createQuery(JPQL, Quiz.class);
