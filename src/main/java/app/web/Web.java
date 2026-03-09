@@ -3,11 +3,9 @@ package app.web;
 import app.db.DBContext;
 import io.javalin.Javalin;
 
-public class Web
-{
+public class Web {
 
-    public static Javalin newJavalinApp(DBContext db)
-    {
+    public static Javalin newJavalinApp(DBContext db) {
         Javalin app = Javalin.create(config -> {
             // routes
             config.routes.apiBuilder(WebQuiz.routes(db));

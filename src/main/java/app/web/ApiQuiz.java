@@ -1,39 +1,23 @@
 package app.web;
 
-import app.db.*;
-import app.web.json.*;
-
+import java.security.InvalidParameterException;
 import java.util.List;
+import java.util.Map;
+
+import app.db.Answer;
+import app.db.DBContext;
+import app.db.DBException;
+import app.db.Question;
+import app.db.Quiz;
+import app.db.Tag;
+import app.web.json.JsonArray;
+import app.web.json.JsonBuilder;
+import app.web.json.JsonException;
+import app.web.json.JsonObject;
+import app.web.json.JsonParser;
 
 class ApiQuiz
 {
-    static String getlist(DBContext db, String tagname)
-        throws APIException
-    {
-        try {
-            JsonBuilder jb = new JsonBuilder();
-            List<Quiz> quizzes;
-
-            quizzes = Quiz.loadTop10ByTag(db, tagname);
-            jb.arrayBegin();
-            for (Quiz quiz : quizzes) {
-                jb.objectBegin();
-                jb.field("id", quiz.id);
-                jb.field("title", quiz.title);
-                jb.arrayBegin("tags");
-                for (Tag tag : quiz.tags)
-                    jb.value(tag.name);
-                jb.arrayEnd();
-                jb.objectEnd();
-            }
-            jb.arrayEnd();
-
-            return jb.build();
-        } catch (DBException e) {
-            throw new APIException(500, e);
-        }
-    }
-
     private static Quiz fromJson(String json)
         throws JsonException
     {
@@ -109,47 +93,65 @@ class ApiQuiz
         }
     }
 
-    static String get(DBContext db, Integer id)
+    private static String getQueryParam(String key, String value,
+                                        Map<String, List<String>> query)
+    {
+        List<String> values;
+        values = query.get(key);
+        if (values == null || values.isEmpty())
+            return value;
+        return values.get(0);
+    }
+
+    static String get(DBContext db, Map<String, List<String>> query)
             throws APIException
     {
         JsonBuilder jb = new JsonBuilder();
-        Quiz quiz;
-        List<Question> questions;
+        List<Quiz> quizzes;
 
         try {
-            quiz = Quiz.load(db, id);
-            if (quiz == null)
-                throw new APIException(404, "not found");
-            questions = Question.loadByQuizId(db, quiz.id);
-            if (questions == null)
-                throw new APIException(404, "not found");
+            int page;
+            String sortKey;
+            String sortOrder;
+            String tag;
+            String category;
 
-            jb.objectBegin();
-            jb.field("id", quiz.id);
-            jb.field("title", quiz.title);
-            jb.arrayBegin("questions");
-            for (Question question : questions) {
-                jb.objectBegin();
-                jb.field("id", question.id);
-                jb.field("question", question.question);
-                jb.field("slot", question.slot);
-                jb.arrayBegin("answers");
-                for (Answer answer : question.answers) {
-                    jb.objectBegin();
-                    jb.field("id", answer.id);
-                    jb.field("answer", answer.answer);
-                    jb.field("slot", answer.slot);
-                    jb.field("points", answer.points);
-                    jb.objectEnd();
-                }
-                jb.arrayEnd();
-                jb.objectEnd();
-            }
-            jb.arrayEnd();
-            jb.objectEnd();
-            return jb.build();
+            page = Integer.parseInt(getQueryParam("page", "1", query));
+            sortKey = getQueryParam("sort-key", "id", query);
+            sortOrder = getQueryParam("sort-order", "desc", query);
+            tag = getQueryParam("tag", null, query);
+            category = getQueryParam("category", null, query);
+            if (page < 1)
+                throw new APIException(400, "page < 1");
+
+            quizzes = Quiz.loadByQuery(db,
+                    page-1,
+                    sortKey, sortOrder,
+                    tag, category);
+        } catch (InvalidParameterException|NumberFormatException e) {
+            throw new APIException(400, e);
         } catch (DBException e) {
             throw new APIException(500, e);
         }
+
+        jb.arrayBegin();
+        if (quizzes != null) {
+            for (Quiz quiz : quizzes) {
+                jb.objectBegin();
+                jb.field("id", quiz.id);
+                jb.field("title", quiz.title);
+                jb.field("playCount", quiz.playCount);
+                jb.field("voteAverage", quiz.voteAverage);
+                jb.field("created", quiz.created.toString());
+                jb.arrayBegin("tags");
+                for (Tag tag : quiz.tags)
+                    jb.value(tag.name);
+                jb.arrayEnd();
+                jb.objectEnd();
+            }
+        }
+        jb.arrayEnd();
+
+        return jb.build();
     }
 }

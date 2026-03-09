@@ -19,7 +19,7 @@ class QuizTest
     @Test
     public void GET_quiz() {
         JavalinTest.test(app, (server, client) -> {
-            Response res = client.get("/quiz/1");
+            Response res = client.get("/quiz");
             assertEquals(200, res.code());
             JsonParser.decodeObject(res.body().string());
         });

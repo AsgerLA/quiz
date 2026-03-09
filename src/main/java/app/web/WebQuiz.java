@@ -4,6 +4,9 @@ import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
 import static io.javalin.apibuilder.ApiBuilder.put;
 
+import java.util.List;
+import java.util.Map;
+
 import app.db.DBContext;
 import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
@@ -16,24 +19,10 @@ class WebQuiz
     {
         WebQuiz.db = db;
         return () -> {
-            get("/quizlist", WebQuiz::GET_quizlist);
             post("/quiz", WebQuiz::POST_quiz);
             put("/quiz/", WebQuiz::PUT_quiz);
-            get("/quiz/{id}", WebQuiz::GET_quiz);
+            get("/quiz", WebQuiz::GET_quiz);
         };
-    }
-
-    static void GET_quizlist(Context ctx)
-            throws APIException
-    {
-        String tagname;
-
-        tagname = ctx.queryParam("tag");
-        if (tagname == null) {
-            ctx.status(400);
-            return;
-        }
-        ctx.json(ApiQuiz.getlist(db, tagname));
     }
 
     static void POST_quiz(Context ctx)
@@ -53,11 +42,17 @@ class WebQuiz
     static void GET_quiz(Context ctx)
             throws APIException
     {
-        int id;
+        /* ?category=<tag-name>
+         * &tag=<tag-name>
+         * &sort-order=<desc|asc>
+         * &sort-key=<column>
+         * &page=<page-num>
+         */
+        Map<String, List<String>> query;
         String json;
 
-        id = Integer.parseInt(ctx.pathParam("id"));
-        json = ApiQuiz.get(db, id);
+        query = ctx.queryParamMap();
+        json = ApiQuiz.get(db, query);
 
         ctx.json(json);
     }

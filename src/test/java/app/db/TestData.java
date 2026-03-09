@@ -15,11 +15,18 @@ public class TestData
     {
         Random rand = new Random();
 
-        Tag tag = new Tag("test");
-        Tag.save(db, tag);
+        Tag[] tags = new Tag[] {
+            new Tag("geography"),
+            new Tag("sports"),
+            new Tag("science"),
+            new Tag("history"),
+            new Tag("trivia"),
+        };
 
-        Category category = new Category(tag);
-        Category.save(db, category);
+        for (Tag tag : tags) {
+            Tag.save(db, tag);
+            Category.save(db, new Category(tag));
+        }
 
         for (int quizIndex = 0;
              quizIndex < NUM_QUIZZES;
@@ -39,7 +46,7 @@ public class TestData
                 quiz.questions.add(q);
             }
 
-            quiz.tags.add(tag);
+            quiz.tags.add(tags[rand.nextInt(0, tags.length)]);
             Quiz.save(db, quiz);
         }
     }

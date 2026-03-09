@@ -29,7 +29,7 @@ public class DBTest
         String username = System.getenv("DB_USERNAME");
         String password = System.getenv("DB_PASSWORD");
         String url      = System.getenv("DB_URL");
-        db = new DBContext(username, password, url);
+        db = DBContext.createTEST(username, password, url);
         TestData.populate(db);
 
         // register callback
