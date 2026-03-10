@@ -22,6 +22,7 @@ class WebQuiz
             post("/quiz", WebQuiz::POST_quiz);
             put("/quiz/", WebQuiz::PUT_quiz);
             get("/quiz", WebQuiz::GET_quiz);
+            get("/quiz/{id}", WebQuiz::GET_quiz_id);
         };
     }
 
@@ -53,6 +54,19 @@ class WebQuiz
 
         query = ctx.queryParamMap();
         json = ApiQuiz.get(db, query);
+
+        ctx.json(json);
+    }
+
+    static void GET_quiz_id(Context ctx)
+        throws APIException
+    {
+        int id;
+        String json;
+
+        id = Integer.parseInt(ctx.pathParam("id"));
+
+        json = ApiQuiz.get(db, id);
 
         ctx.json(json);
     }

@@ -20,6 +20,7 @@ class HibernateConfig
             configuration.addAnnotatedClass(Answer.class);
             configuration.addAnnotatedClass(Category.class);
             configuration.addAnnotatedClass(Tag.class);
+            configuration.addAnnotatedClass(Account.class);
             // TODO: Add more entities here...
         }
 

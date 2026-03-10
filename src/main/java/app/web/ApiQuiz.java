@@ -66,6 +66,25 @@ class ApiQuiz
         return quiz;
     }
 
+    static String toJson(Quiz quiz)
+    {
+        JsonBuilder jb = new JsonBuilder();
+
+        jb.objectBegin();
+        jb.field("id", quiz.id);
+        jb.field("title", quiz.title);
+        jb.field("playCount", quiz.playCount);
+        jb.field("voteAverage", quiz.voteAverage);
+        jb.field("created", quiz.created.toString());
+        jb.arrayBegin("tags");
+        for (Tag tag : quiz.tags)
+            jb.value(tag.name);
+        jb.arrayEnd();
+        jb.objectEnd();
+
+        return jb.build();
+    }
+
     static void post(DBContext db, String json)
             throws APIException
     {
@@ -137,21 +156,27 @@ class ApiQuiz
         jb.arrayBegin();
         if (quizzes != null) {
             for (Quiz quiz : quizzes) {
-                jb.objectBegin();
-                jb.field("id", quiz.id);
-                jb.field("title", quiz.title);
-                jb.field("playCount", quiz.playCount);
-                jb.field("voteAverage", quiz.voteAverage);
-                jb.field("created", quiz.created.toString());
-                jb.arrayBegin("tags");
-                for (Tag tag : quiz.tags)
-                    jb.value(tag.name);
-                jb.arrayEnd();
-                jb.objectEnd();
+                jb.value(toJson(quiz));
             }
         }
         jb.arrayEnd();
 
         return jb.build();
+    }
+
+    static String get(DBContext db, Integer id)
+        throws APIException
+    {
+        try {
+            Quiz quiz;
+
+            quiz = Quiz.load(db, id);
+            if (quiz == null)
+                throw new APIException(404, "not found");
+
+            return toJson(quiz);
+        } catch (DBException e) {
+            throw new APIException(500, e);
+        }
     }
 }

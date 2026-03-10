@@ -9,6 +9,7 @@ public class Web {
         Javalin app = Javalin.create(config -> {
             // routes
             config.routes.apiBuilder(WebQuiz.routes(db));
+            config.routes.apiBuilder(WebUser.routes(db));
             // exception handling
             config.routes.exception(Exception.class, (e, ctx) -> {
                 e.printStackTrace();

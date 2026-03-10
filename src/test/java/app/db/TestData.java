@@ -28,6 +28,8 @@ public class TestData
             Category.save(db, new Category(tag));
         }
 
+        Account.create(db, new Account("Test user"));
+
         for (int quizIndex = 0;
              quizIndex < NUM_QUIZZES;
              quizIndex++) {
