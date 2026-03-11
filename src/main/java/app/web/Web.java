@@ -6,10 +6,12 @@ import io.javalin.Javalin;
 public class Web {
 
     public static Javalin newJavalinApp(DBContext db) {
+        WebQuiz webQuiz = new WebQuiz(db);
+        WebUser webUser = new WebUser(db);
         Javalin app = Javalin.create(config -> {
             // routes
-            config.routes.apiBuilder(WebQuiz.routes(db));
-            config.routes.apiBuilder(WebUser.routes(db));
+            config.routes.apiBuilder(webQuiz.routes());
+            config.routes.apiBuilder(webUser.routes());
             // exception handling
             config.routes.exception(Exception.class, (e, ctx) -> {
                 e.printStackTrace();

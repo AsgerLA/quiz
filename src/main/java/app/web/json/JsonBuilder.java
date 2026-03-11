@@ -88,6 +88,12 @@ public class JsonBuilder
         sb.append("],");
     }
 
+    public void json(String json)
+    {
+        sb.append(json);
+        sb.append(',');
+    }
+
     public String build()
     {
         sb.setLength(sb.length()-1);

@@ -12,33 +12,33 @@ import app.web.json.JsonBuilder;
 class WebUserTest
 {
     @Test
-    public void POST_user()
+    void POST_user()
     {
         String json;
         JsonBuilder jb = new JsonBuilder();
 
         jb.objectBegin();
-        jb.field("username", "Test user2");
+        jb.field("username", "Test_user2");
         jb.objectEnd();
         json = jb.build();
 
         given()
-            .header("Content-type", "application/json")
+            .header("Content-Type", "application/json")
             .body(json)
             .when()
-            .post("/user")
+            .post("/api/user")
             .then()
             .statusCode(201);
     }
 
     @Test
-    public void GET_user()
+    void GET_user()
     {
         given()
             .when()
-            .get("/user/1")
+            .get("/api/user/@Test_user")
             .then()
             .statusCode(200)
-            .body("username", is("Test user"));
+            .body("username", is("Test_user"));
     }
 }

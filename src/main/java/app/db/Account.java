@@ -1,5 +1,6 @@
 package app.db;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
 import jakarta.persistence.Column;
@@ -10,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.TypedQuery;
 
 @Entity
 public class Account
@@ -18,17 +20,55 @@ public class Account
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 16)
     public String username;
 
     // TODO: password
 
     public Instant created;
 
-    public Account() {}
+    Account() {}
     public Account(String username)
     {
         this.username = username;
+    }
+
+    /**
+     * Verifies a username.
+     *
+     * @param  username the string to be verified
+     * @return          true if valid
+     */
+    public static boolean verifyUsername(String username)
+    {
+        int at;
+        char c;
+
+        username = new String(username.getBytes(), StandardCharsets.UTF_8);
+        System.out.println("verify: "+username);
+        if (username.length() < 4 ||
+            username.length() >= 16)
+            return false;
+        if (!isalpha(username.charAt(0)))
+            return false;
+        for (at = 1; at < username.length(); at++) {
+            c = username.charAt(at);
+            if (!isalpha(c) && !isdigit(c))
+                return false;
+        }
+        return true;
+    }
+
+    private static boolean isdigit(char c)
+    {
+        return (c >= '0' && c <= '9');
+    }
+
+    private static boolean isalpha(char c)
+    {
+        return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                (c == '_') ||
+                (c >= 0xc0 && c <= 0xff && c != 0xf7 && c != 0xd7));
     }
 
     @PrePersist
@@ -55,12 +95,15 @@ public class Account
         }
     }
 
-    public static Account read(DBContext db, Integer id)
+    public static Account read(DBContext db, String username)
         throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {
-            return em.find(Account.class, id);
+            String JPQL = "SELECT a FROM Account a WHERE a.username=:username";
+            TypedQuery<Account> q = em.createQuery(JPQL, Account.class);
+            q.setParameter("username", username);
+            return q.getSingleResultOrNull();
         } catch (PersistenceException e) {
             throw new DBException(e.getMessage());
         } finally {

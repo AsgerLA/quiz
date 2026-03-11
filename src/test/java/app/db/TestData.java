@@ -28,13 +28,15 @@ public class TestData
             Category.save(db, new Category(tag));
         }
 
-        Account.create(db, new Account("Test user"));
+        Account account = new Account("Test_user");
+        Account.create(db, account);
 
         for (int quizIndex = 0;
              quizIndex < NUM_QUIZZES;
              quizIndex++) {
             quizzes[quizIndex] = new Quiz("Test Quiz");
             Quiz quiz = quizzes[quizIndex];
+            quiz.owner = account;
 
             int numQuestions = rand.nextInt(MIN_QUESTIONS, MAX_QUESTIONS);
             for (int questionIndex = 0;

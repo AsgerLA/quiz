@@ -13,7 +13,7 @@ class WebQuizTest
     {
         given()
             .when()
-            .get("/quiz")
+            .get("/api/quiz")
             .then()
             .statusCode(200);
     }
@@ -24,7 +24,7 @@ class WebQuizTest
 
         given()
             .when()
-            .get("/quiz/1")
+            .get("/api/quiz/1")
             .then()
             .statusCode(200);
     }

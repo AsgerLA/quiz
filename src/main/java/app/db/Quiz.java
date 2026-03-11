@@ -15,6 +15,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.PrePersist;
@@ -38,6 +39,9 @@ public class Quiz
 
     public Instant created;
     public Instant modified;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    public Account owner;
 
     public int playCount;
 
@@ -135,15 +139,13 @@ public class Quiz
         }
     }
 
-    public static List<Quiz> loadTop10ByTag(DBContext db, String name)
-            throws DBException
+    public static List<Quiz> loadByOwner(DBContext db, Integer ownerId)
+        throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {
-            String JPQL = "SELECT q FROM Quiz q JOIN q.tags t WHERE t.name = :name";
+            String JPQL = "SELECT q FROM Quiz q WHERE q.owner.id = :ownerId";
             TypedQuery<Quiz> q = em.createQuery(JPQL, Quiz.class);
-            q.setParameter("name", name);
-            q.setMaxResults(10);
             return q.getResultList();
         } catch (PersistenceException e) {
             throw new DBException(e.getMessage());
