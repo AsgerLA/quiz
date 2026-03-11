@@ -21,6 +21,7 @@ class WebQuiz
     {
         return () -> {
             get("/api/quiz", this::GET_quiz);
+            get("/api/quiz/user/{id}", this::GET_quiz_user);
             get("/api/quiz/{id}", this::GET_quiz_id);
         };
     }
@@ -30,15 +31,41 @@ class WebQuiz
     {
         /* ?category=<tag-name>
          * &tag=<tag-name>
-         * &sort-order=<desc|asc>
-         * &sort-key=<column>
+         * &sort=<column>
+         * &order=<desc|asc>
          * &page=<page-num>
          */
         Map<String, List<String>> query;
         String json;
 
         query = ctx.queryParamMap();
-        json = ApiQuiz.get(db, query);
+        json = ApiQuiz.get(db, query, null);
+
+        ctx.json(json);
+    }
+
+    void GET_quiz_user(Context ctx)
+            throws APIException
+    {
+        /* ?category=<tag-name>
+         * &tag=<tag-name>
+         * &sort=<column>
+         * &order=<desc|asc>
+         * &page=<page-num>
+         */
+        Map<String, List<String>> query;
+        String json;
+        int ownerId;
+
+        try {
+            ownerId = Integer.parseInt(ctx.pathParam("id"));
+        } catch (NumberFormatException e) {
+            ctx.status(404);
+            return;
+        }
+
+        query = ctx.queryParamMap();
+        json = ApiQuiz.get(db, query, ownerId);
 
         ctx.json(json);
     }
@@ -49,7 +76,12 @@ class WebQuiz
         int id;
         String json;
 
-        id = Integer.parseInt(ctx.pathParam("id"));
+        try {
+            id = Integer.parseInt(ctx.pathParam("id"));
+        } catch (NumberFormatException e) {
+            ctx.status(404);
+            return;
+        }
 
         json = ApiQuiz.get(db, id);
 

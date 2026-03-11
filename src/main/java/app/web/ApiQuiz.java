@@ -33,42 +33,16 @@ class ApiQuiz
         return jb.build();
     }
 
-    private static String getQueryParam(String key, String value,
-                                        Map<String, List<String>> query)
-    {
-        List<String> values;
-        values = query.get(key);
-        if (values == null || values.isEmpty())
-            return value;
-        return values.get(0);
-    }
 
-    static String get(DBContext db, Map<String, List<String>> query)
+    static String get(DBContext db, Map<String, List<String>> query, Integer ownerId)
             throws APIException
     {
         JsonBuilder jb = new JsonBuilder();
         List<Quiz> quizzes;
 
         try {
-            int page;
-            String sortKey;
-            String sortOrder;
-            String tag;
-            String category;
-
-            page = Integer.parseInt(getQueryParam("page", "1", query));
-            sortKey = getQueryParam("sort-key", "id", query);
-            sortOrder = getQueryParam("sort-order", "desc", query);
-            tag = getQueryParam("tag", null, query);
-            category = getQueryParam("category", null, query);
-            if (page < 1)
-                throw new APIException(400, "page < 1");
-
-            quizzes = Quiz.loadByQuery(db,
-                    page-1,
-                    sortKey, sortOrder,
-                    tag, category);
-        } catch (InvalidParameterException|NumberFormatException e) {
+            quizzes = Quiz.loadByQuery(db, query, ownerId);
+        } catch (InvalidParameterException e) {
             throw new APIException(400, e);
         } catch (DBException e) {
             throw new APIException(500, e);

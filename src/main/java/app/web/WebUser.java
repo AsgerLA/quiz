@@ -25,8 +25,6 @@ class WebUser
             get("/api/user/{username}", this::GET_user);
             post("/api/user/quiz", this::POST_user_quiz);
             put("/api/user/quiz", this::PUT_user_quiz);
-            //get("/{username}/quiz", WebUser::GET_user_quiz);
-            //get("/user/quiz/{id}", WebUser::GET_user_quiz_id);
         };
     }
 

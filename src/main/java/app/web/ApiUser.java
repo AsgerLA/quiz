@@ -43,21 +43,22 @@ class ApiUser
             throws APIException
     {
         JsonBuilder jb;
-        Account account;
+        Account user;
 
         try {
-            account = Account.read(db, username);
-            if (account == null)
-                throw new APIException(404, "account not found");
+            user = Account.read(db, username);
         } catch (DBException e) {
             throw new APIException(500, e);
         }
 
+        if (user == null)
+            throw new APIException(404, "account not found");
+
         jb = new JsonBuilder();
 
         jb.objectBegin();
-        jb.field("id", account.id);
-        jb.field("username", account.username);
+        jb.field("id", user.id);
+        jb.field("username", user.username);
         jb.objectEnd();
 
         return jb.build();

@@ -4,6 +4,7 @@ import java.security.InvalidParameterException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -139,47 +140,56 @@ public class Quiz
         }
     }
 
-    public static List<Quiz> loadByOwner(DBContext db, Integer ownerId)
-        throws DBException
+    private static String getQueryParam(String key, String value,
+                                        Map<String, List<String>> query)
     {
-        EntityManager em = db.emf.createEntityManager();
-        try {
-            String JPQL = "SELECT q FROM Quiz q WHERE q.owner.id = :ownerId";
-            TypedQuery<Quiz> q = em.createQuery(JPQL, Quiz.class);
-            return q.getResultList();
-        } catch (PersistenceException e) {
-            throw new DBException(e.getMessage());
-        } finally {
-            em.close();
-        }
+        List<String> values;
+        values = query.get(key);
+        if (values == null || values.isEmpty())
+            return value;
+        return values.get(0);
     }
-
     private static final int PAGE_SIZE = 20;
     public static List<Quiz> loadByQuery(DBContext db,
-                                         int page,
-                                         String sortKey,
-                                         String sortOrder,
-                                         String tag,
-                                         String category)
+                                         Map<String, List<String>> query,
+                                         Integer ownerId)
             throws DBException, InvalidParameterException
     {
+        int page;
+        String sort;
+        String order;
+        String tag;
+        String category;
         EntityManager em = db.emf.createEntityManager();
         try {
-            if (!(sortKey.equals("id") ||
-                  sortKey.equals("created") ||
-                  sortKey.equals("playCount") ||
-                  sortKey.equals("rating"))) {
-                throw new InvalidParameterException("sortKey");
+            page = Integer.parseInt(getQueryParam("page", "1", query));
+            sort= getQueryParam("sort", "title", query);
+            order = getQueryParam("order", "asc", query);
+            tag = getQueryParam("tag", null, query);
+            category = getQueryParam("category", null, query);
+            if (page < 1)
+                throw new InvalidParameterException("page < 1");
+            page--;
+            if (!(sort.equals("title") ||
+                  sort.equals("created") ||
+                  sort.equals("playCount") ||
+                  sort.equals("rating"))) {
+                throw new InvalidParameterException("sort");
             }
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Quiz> cq = cb.createQuery(Quiz.class);
             Root<Quiz> root = cq.from(Quiz.class);
             Join<Quiz, Tag> join = root.join("tags");
 
+
             Subquery<Category> sub = cq.subquery(Category.class);
             Root<Category> subroot = sub.from(Category.class);
 
             cq.select(root);
+            if (ownerId != null) {
+                Join<Quiz, Account> joinAccount = root.join("owner");
+                cq.where(cb.equal(joinAccount.get("id"), ownerId));
+            }
             if (tag != null && category != null) {
                 Predicate p1 = null;
                 Predicate p2 = null;
@@ -197,18 +207,20 @@ public class Quiz
                 cq.where(cb.equal(join.get("name"), category));
             }
 
-            if (sortOrder.equals("desc")) {
-                cq.orderBy(cb.desc(root.get(sortKey)));
-            } else if (sortOrder.equals("asc")) {
-                cq.orderBy(cb.asc(root.get(sortKey)));
+            if (order.equals("desc")) {
+                cq.orderBy(cb.desc(root.get(sort)));
+            } else if (order.equals("asc")) {
+                cq.orderBy(cb.asc(root.get(sort)));
             } else {
-                throw new InvalidParameterException("sortOrder");
+                throw new InvalidParameterException("sort");
             }
 
             TypedQuery<Quiz> q = em.createQuery(cq);
             q.setFirstResult(page*PAGE_SIZE);
             q.setMaxResults(PAGE_SIZE);
             return q.getResultList();
+        } catch (NumberFormatException e) {
+            throw new InvalidParameterException(e);
         } catch (PersistenceException e) {
             throw new DBException(e.getMessage());
         } finally {

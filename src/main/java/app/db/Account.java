@@ -45,7 +45,6 @@ public class Account
         char c;
 
         username = new String(username.getBytes(), StandardCharsets.UTF_8);
-        System.out.println("verify: "+username);
         if (username.length() < 4 ||
             username.length() >= 16)
             return false;
