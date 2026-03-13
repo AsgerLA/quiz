@@ -36,7 +36,6 @@ class ApiQuiz
         return jb.build();
     }
 
-
     static String get(DBContext db,
                       Map<String, List<String>> query,
                       Integer ownerId)
@@ -46,7 +45,7 @@ class ApiQuiz
         List<Quiz> quizzes;
 
         try {
-            quizzes = Quiz.loadByQuery(db, new Quiz.Query(query), ownerId);
+            quizzes = Quiz.loadByQuery(db, new Quiz.QueryParam(query), ownerId);
         } catch (InvalidParameterException e) {
             throw new APIException(400, e);
         } catch (DBException e) {
@@ -78,5 +77,32 @@ class ApiQuiz
         } catch (DBException e) {
             throw new APIException(500, e);
         }
+    }
+
+    static String getSearch(DBContext db, String search, Integer page)
+            throws APIException
+    {
+        JsonBuilder jb = new JsonBuilder();
+        List<Quiz> quizzes;
+
+        if (search == null)
+            throw new APIException(400, "missing search query");
+        if (page == null)
+            page = 1;
+        try {
+            quizzes = Quiz.loadBySearch(db, search, page);
+        } catch (DBException e) {
+            throw new APIException(500, e);
+        }
+
+        jb.arrayBegin();
+        if (quizzes != null) {
+            for (Quiz quiz : quizzes) {
+                jb.json(toJson(quiz));
+            }
+        }
+        jb.arrayEnd();
+
+        return jb.build();
     }
 }

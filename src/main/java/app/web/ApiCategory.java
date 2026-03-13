@@ -29,13 +29,13 @@ class ApiCategory
         try {
             JsonBuilder jb;
             List<Quiz> quizzes;
-            Quiz.Query query;
+            Quiz.QueryParam query;
             List<Category> categories;
 
             categories = Category.loadAll(db);
             jb = new JsonBuilder();
 
-            query = new Quiz.Query();
+            query = new Quiz.QueryParam();
             query.pageSize = 4;
 
             jb.objectBegin();
@@ -69,13 +69,13 @@ class ApiCategory
         try {
             JsonBuilder jb;
             List<Quiz> quizzes;
-            Quiz.Query query;
+            Quiz.QueryParam query;
             List<Category> categories;
 
             categories = Category.loadAll(db);
             jb = new JsonBuilder();
 
-            query = new Quiz.Query();
+            query = new Quiz.QueryParam();
             query.pageSize = 4;
 
             jb.objectBegin();

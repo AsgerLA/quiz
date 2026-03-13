@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PersistenceException;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 @Entity
@@ -41,7 +42,7 @@ public class Tag
         return t.id == id || t.name.equals(this.name);
     }
 
-    public static void save(DBContext db, Tag tag)
+    public static void create(DBContext db, Tag tag)
         throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
@@ -84,6 +85,28 @@ public class Tag
             q.setParameter("name", name);
             return q.getSingleResult();
         } catch (PersistenceException e) {
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    public static void gc(DBContext db)
+        throws DBException
+    {
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            String SQL =
+                "DELETE FROM tag WHERE NOT EXISTS "+
+                "(SELECT quiz_tag.tags_id FROM quiz_tag "+
+                "WHERE quiz_tag.tags_id=tag.id)";
+            Query q = em.createNativeQuery(SQL);
+            q.executeUpdate();
+            em.getTransaction().commit();
+        } catch (PersistenceException e) {
+            if (em.getTransaction().isActive())
+                em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();

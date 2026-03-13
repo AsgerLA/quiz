@@ -21,6 +21,7 @@ class WebQuiz
     {
         return () -> {
             get("/api/quiz", this::GET_quiz);
+            get("/api/quiz/search", this::GET_quiz_search);
             get("/api/quiz/user/{id}", this::GET_quiz_user);
             get("/api/quiz/{id}", this::GET_quiz_id);
         };
@@ -40,6 +41,26 @@ class WebQuiz
 
         query = ctx.queryParamMap();
         json = ApiQuiz.get(db, query, null);
+
+        ctx.json(json);
+    }
+
+    void GET_quiz_search(Context ctx)
+            throws APIException
+    {
+        String json;
+        String search;
+        Integer page = null;
+
+        search = ctx.queryParam("query");
+        try {
+            String tmp = ctx.queryParam("page");
+            if (tmp != null)
+                page = Integer.parseInt(tmp);
+        } catch (NumberFormatException e) {
+            throw new APIException(400, "bad page");
+        }
+        json = ApiQuiz.getSearch(db, search, page);
 
         ctx.json(json);
     }

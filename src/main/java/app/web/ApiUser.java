@@ -1,5 +1,7 @@
 package app.web;
 
+import java.util.List;
+
 import app.db.Account;
 import app.db.Answer;
 import app.db.DBContext;
@@ -64,6 +66,53 @@ class ApiUser
         return jb.build();
     }
 
+    private static void addQuestion(JsonBuilder jb, Question question)
+    {
+        jb.objectBegin();
+            jb.field("id", question.id);
+            jb.field("question", question.question);
+            jb.field("slot", question.question);
+            jb.arrayBegin("answers");
+            for (Answer answer : question.answers) {
+                jb.objectBegin();
+                    jb.field("id", answer.id);
+                    jb.field("answer", answer.answer);
+                    jb.field("points", answer.points);
+                    jb.field("slot", answer.slot);
+                jb.objectEnd();
+            }
+            jb.arrayEnd();
+        jb.objectEnd();
+    }
+
+    static String getQuiz(DBContext db, Account user, Integer id)
+            throws APIException
+    {
+        JsonBuilder jb;
+        Quiz quiz;
+        List<Question> questions;
+
+        try {
+            quiz = Quiz.load(db, id);
+            if (quiz.owner.id != user.id)
+                throw new APIException(403, "not owner");
+            questions = Question.loadByQuizId(db, quiz.id);
+        } catch (DBException e) {
+            throw new APIException(500, e);
+        }
+
+        jb = new JsonBuilder();
+        jb.objectBegin();
+            jb.field("quiz", (Object)ApiQuiz.toJson(quiz));
+            jb.arrayBegin("questions");
+            for (Question question : questions)
+                addQuestion(jb, question);
+            jb.arrayEnd();
+        jb.objectEnd();
+
+        return jb.build();
+    }
+
     private static Quiz fromJson(String json)
         throws JsonException
     {
@@ -121,11 +170,128 @@ class ApiUser
             quiz = fromJson(json);
             quiz.owner = user;
 
-            Quiz.save(db, quiz);
+            Quiz.create(db, quiz);
         } catch (JsonException e) {
             throw new APIException(400, e);
         } catch (DBException e) {
             throw new APIException(500, e);
+        }
+    }
+
+    private static enum Action
+    {
+        CREATE,
+        UPDATE,
+        DELETE,
+    }
+
+    private static void _putTags(DBContext db, Quiz quiz, JsonArray tagsJA)
+            throws APIException, DBException, JsonException
+    {
+        JsonObject tagJO;
+        Action action;
+
+        for (int i = 0; i < tagsJA.size(); i++) {
+            tagJO = tagsJA.getJsonObject(i);
+            action = Action.valueOf(tagJO.getString("action").toUpperCase());
+            if (action == null)
+                throw new APIException(400, "bad action");
+
+            switch (action) {
+                case Action.DELETE:
+                    Quiz.deleteTag(db, quiz.id, tagJO.getInt("id"));
+                    break;
+                case Action.CREATE:
+                    quiz.tags.add(new Tag(tagJO.getString("name")));
+                    break;
+                default:
+                    throw new APIException(400, "bad action");
+            }
+        }
+    }
+
+    private static void _putQuestions(DBContext db,
+                                      Quiz quiz,
+                                      JsonArray questionsJA)
+            throws APIException, DBException, JsonException
+    {
+        JsonObject questionJO;
+        JsonArray answersJA;
+        Question question;
+        Action action;
+
+        if (questionsJA.size() == 0)
+            throw new APIException(400, "no questions");
+
+        for (int i = 0; i < questionsJA.size(); i++) {
+            questionJO = questionsJA.getJsonObject(i);
+            action = Action.valueOf(questionJO.getString("action").toUpperCase());
+
+            switch (action) {
+                case Action.DELETE:
+                    Question.delete(db, questionJO.getInt("id"));
+                    break;
+                case Action.CREATE:
+                    question =
+                        new Question(quiz,
+                                     questionJO.getString("question"),
+                                     questionJO.getInt("slot"));
+                    answersJA = questionJO.getJsonArray("answers");
+                    Question.create(db, question);
+                    _putAnswers(db, question, answersJA);
+                    break;
+                case Action.UPDATE:
+                    question = Question.load(db, questionJO.getInt("id"));
+                    question.question = questionJO.getString("question");
+                    question.slot = questionJO.getInt("slot");
+                    Question.update(db, question);
+                    answersJA = questionJO.getJsonArray("answers");
+                    _putAnswers(db, question, answersJA);
+                    break;
+                default:
+                    throw new APIException(400, "bad action");
+            }
+        }
+    }
+
+    private static void _putAnswers(DBContext db,
+                                    Question question,
+                                    JsonArray answersJA)
+            throws APIException, DBException, JsonException
+    {
+        JsonObject answerJO;
+        Answer answer;
+        Action action;
+
+        if (answersJA.size() == 0)
+            throw new APIException(400, "no questions");
+
+        for (int i = 0; i < answersJA.size(); i++) {
+            answerJO = answersJA.getJsonObject(i);
+            action = Action.valueOf(answerJO.getString("action").toUpperCase());
+
+            switch (action) {
+                case Action.DELETE:
+                    Answer.delete(db, answerJO.getInt("id"));
+                    break;
+                case Action.CREATE:
+                    answer =
+                        new Answer(question,
+                                   answerJO.getString("answer"),
+                                   answerJO.getInt("points"),
+                                   answerJO.getInt("slot"));
+                    Answer.create(db, answer);
+                    break;
+                case Action.UPDATE:
+                    answer = Answer.load(db, answerJO.getInt("id"));
+                    answer.answer = answerJO.getString("answer");
+                    answer.slot = answerJO.getInt("slot");
+                    answer.points = answerJO.getInt("points");
+                    Answer.update(db, answer);
+                    break;
+                default:
+                    throw new APIException(400, "bad action");
+            }
         }
     }
 
@@ -133,12 +299,29 @@ class ApiUser
             throws APIException
     {
         try {
-            Quiz quiz;
+            Quiz quiz = new Quiz();
+            JsonObject quizJO;
+            JsonArray ja;
 
-            quiz = fromJson(json);
-            quiz.owner = user;
+            quizJO = JsonParser.decodeObject(json);
+
+            quiz.id = quizJO.getInt("id");
+            quiz = Quiz.load(db, quiz.id);
+            if (quiz == null)
+                throw new APIException(404, "quiz not found");
+            if (quiz.owner.id != user.id)
+                throw new APIException(403, "not owner");
+
+            quiz.title = quizJO.getString("title");
+
+            ja = quizJO.getJsonArray("tags");
+            _putTags(db, quiz, ja);
+
+            ja = quizJO.getJsonArray("questions");
+            _putQuestions(db, quiz, ja);
 
             Quiz.update(db, quiz);
+            Tag.gc(db);
         } catch (JsonException e) {
             throw new APIException(400, e);
         } catch (DBException e) {
@@ -146,4 +329,15 @@ class ApiUser
         }
     }
 
+    static void deleteQuiz(DBContext db, Account user, Integer id)
+            throws APIException
+    {
+        try {
+            Quiz.delete(db, user, id);
+        } catch (IllegalArgumentException e) {
+            throw new APIException(403, e);
+        } catch (DBException e) {
+            throw new APIException(500, e);
+        }
+    }
 }

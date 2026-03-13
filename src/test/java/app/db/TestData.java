@@ -30,11 +30,11 @@ public class TestData
         };
 
         for (Tag tag : cattags) {
-            Tag.save(db, tag);
-            Category.save(db, new Category(tag));
+            Tag.create(db, tag);
+            Category.create(db, new Category(tag));
         }
         for (Tag tag : tags) {
-            Tag.save(db, tag);
+            Tag.create(db, tag);
         }
 
         Account account = new Account("Test_user");
@@ -61,7 +61,7 @@ public class TestData
 
             quiz.tags.add(cattags[rand.nextInt(0, cattags.length)]);
             quiz.tags.add(tags[rand.nextInt(0, tags.length)]);
-            Quiz.save(db, quiz);
+            Quiz.create(db, quiz);
         }
     }
 }

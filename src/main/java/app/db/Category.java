@@ -30,7 +30,7 @@ public class Category
         return id;
     }
 
-    public static void save(DBContext db, Category category)
+    public static void create(DBContext db, Category category)
             throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
