@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class TestData
 {
-    static final int NUM_QUIZZES = 5;
+    static final int NUM_QUIZZES = 80;
     static final int MIN_QUESTIONS = 2;
     static final int MAX_QUESTIONS = 10;
 
@@ -15,7 +15,7 @@ public class TestData
     {
         Random rand = new Random();
 
-        Tag[] tags = new Tag[] {
+        Tag[] cattags = new Tag[] {
             new Tag("geography"),
             new Tag("sports"),
             new Tag("science"),
@@ -23,9 +23,18 @@ public class TestData
             new Tag("trivia"),
         };
 
-        for (Tag tag : tags) {
+        Tag[] tags = new Tag[] {
+            new Tag("test"),
+            new Tag("quiz"),
+            new Tag("user tag"),
+        };
+
+        for (Tag tag : cattags) {
             Tag.save(db, tag);
             Category.save(db, new Category(tag));
+        }
+        for (Tag tag : tags) {
+            Tag.save(db, tag);
         }
 
         Account account = new Account("Test_user");
@@ -50,6 +59,7 @@ public class TestData
                 quiz.questions.add(q);
             }
 
+            quiz.tags.add(cattags[rand.nextInt(0, cattags.length)]);
             quiz.tags.add(tags[rand.nextInt(0, tags.length)]);
             Quiz.save(db, quiz);
         }

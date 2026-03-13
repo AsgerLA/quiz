@@ -140,36 +140,67 @@ public class Quiz
         }
     }
 
-    private static String getQueryParam(String key, String value,
-                                        Map<String, List<String>> query)
+    public static class Query
     {
-        List<String> values;
-        values = query.get(key);
-        if (values == null || values.isEmpty())
-            return value;
-        return values.get(0);
+        public int page;
+        public int pageSize;
+        public String sort;
+        public String order;
+        public String tag;
+        public String category;
+
+        public Query()
+        {
+            page = 1;
+            pageSize = 10;
+            sort = "title";
+            order = "asc";
+            tag = null;
+            category = null;
+        }
+        public Query(Map<String, List<String>> query)
+        {
+            pageSize = 10;
+            page = Integer.parseInt(getQueryParam("page", "1", query));
+            sort = getQueryParam("sort", "title", query);
+            order = getQueryParam("order", "asc", query);
+            tag = getQueryParam("tag", null, query);
+            category = getQueryParam("category", null, query);
+            if (page < 1)
+                throw new InvalidParameterException("page < 1");
+        }
+        private static String getQueryParam(String key, String value,
+                Map<String, List<String>> query)
+        {
+            List<String> values;
+            values = query.get(key);
+            if (values == null || values.isEmpty())
+                return value;
+            return values.get(0);
+        }
     }
+
     private static final int PAGE_SIZE = 20;
     public static List<Quiz> loadByQuery(DBContext db,
-                                         Map<String, List<String>> query,
+                                         Query query,
                                          Integer ownerId)
             throws DBException, InvalidParameterException
     {
-        int page;
+        int page, pageSize;
         String sort;
         String order;
         String tag;
         String category;
         EntityManager em = db.emf.createEntityManager();
         try {
-            page = Integer.parseInt(getQueryParam("page", "1", query));
-            sort= getQueryParam("sort", "title", query);
-            order = getQueryParam("order", "asc", query);
-            tag = getQueryParam("tag", null, query);
-            category = getQueryParam("category", null, query);
-            if (page < 1)
-                throw new InvalidParameterException("page < 1");
-            page--;
+            pageSize = query.pageSize;
+            page = query.page-1;
+            sort = query.sort;
+            order = query.order;
+            tag = query.tag;
+            category = query.category;
+            if (page < 0)
+                page = 0;
             if (!(sort.equals("title") ||
                   sort.equals("created") ||
                   sort.equals("playCount") ||
@@ -212,12 +243,14 @@ public class Quiz
             } else if (order.equals("asc")) {
                 cq.orderBy(cb.asc(root.get(sort)));
             } else {
-                throw new InvalidParameterException("sort");
+                throw new InvalidParameterException("order");
             }
 
             TypedQuery<Quiz> q = em.createQuery(cq);
-            q.setFirstResult(page*PAGE_SIZE);
-            q.setMaxResults(PAGE_SIZE);
+            if (pageSize > PAGE_SIZE)
+                pageSize = PAGE_SIZE;
+            q.setFirstResult(page*pageSize);
+            q.setMaxResults(pageSize);
             return q.getResultList();
         } catch (NumberFormatException e) {
             throw new InvalidParameterException(e);

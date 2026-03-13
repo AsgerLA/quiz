@@ -30,19 +30,14 @@ public class Category
         return id;
     }
 
-    private static final Set<Category> cache = Collections.synchronizedSet(new HashSet<>());
-
     public static void save(DBContext db, Category category)
             throws DBException
     {
-        if (cache.isEmpty())
-            cache.addAll(loadAll(db));
         EntityManager em = db.emf.createEntityManager();
         try {
             em.getTransaction().begin();
             em.persist(category);
             em.getTransaction().commit();
-            cache.add(category);
         } catch (PersistenceException e) {
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();
@@ -55,15 +50,11 @@ public class Category
     public static void delete(DBContext db, Category category)
             throws DBException
     {
-        if (cache.isEmpty()) {
-            cache.addAll(loadAll(db));
-        }
         EntityManager em = db.emf.createEntityManager();
         try {
             em.getTransaction().begin();
             em.persist(category);
             em.getTransaction().commit();
-            cache.remove(category);
         } catch (PersistenceException e) {
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();
@@ -73,27 +64,39 @@ public class Category
         }
     }
 
-    public static Category load(DBContext db, int id)
+    public static Category load(DBContext db, Integer id)
             throws DBException
     {
-        if (cache.isEmpty())
-            cache.addAll(loadAll(db));
-        Iterator<Category> it = cache.iterator();
-        Category cat;
-        while (it.hasNext()) {
-            cat = it.next();
-            if (cat.id == id)
-                return cat;
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            return em.find(Category.class, id);
+        } catch (PersistenceException e) {
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
         }
-        return null;
     }
 
-    public static Set<Category> loadAll(DBContext db)
+    public static Category load(DBContext db, String name)
             throws DBException
     {
-        if (!cache.isEmpty()) {
-            return cache;
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            String JPQL =
+                "SELECT c FROM Category c JOIN c.tag t WHERE t.name=:name";
+            TypedQuery<Category> q = em.createQuery(JPQL, Category.class);
+            q.setParameter("name", name);
+            return q.getSingleResultOrNull();
+        } catch (PersistenceException e) {
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
         }
+    }
+
+    public static List<Category> loadAll(DBContext db)
+            throws DBException
+    {
         EntityManager em = db.emf.createEntityManager();
         try {
             CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -101,8 +104,7 @@ public class Category
             Root<Category> rootEntry = cq.from(Category.class);
             CriteriaQuery<Category> all = cq.select(rootEntry);
             TypedQuery<Category> allQuery = em.createQuery(all);
-            cache.addAll(allQuery.getResultList());
-            return cache;
+            return allQuery.getResultList();
         } catch (PersistenceException e) {
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();

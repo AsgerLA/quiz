@@ -1,9 +1,12 @@
 package app.web;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import app.db.Category;
 import app.db.DBContext;
 import app.db.DBException;
 import app.db.Quiz;
@@ -34,14 +37,16 @@ class ApiQuiz
     }
 
 
-    static String get(DBContext db, Map<String, List<String>> query, Integer ownerId)
+    static String get(DBContext db,
+                      Map<String, List<String>> query,
+                      Integer ownerId)
             throws APIException
     {
         JsonBuilder jb = new JsonBuilder();
         List<Quiz> quizzes;
 
         try {
-            quizzes = Quiz.loadByQuery(db, query, ownerId);
+            quizzes = Quiz.loadByQuery(db, new Quiz.Query(query), ownerId);
         } catch (InvalidParameterException e) {
             throw new APIException(400, e);
         } catch (DBException e) {
