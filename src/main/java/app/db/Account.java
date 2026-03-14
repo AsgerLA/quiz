@@ -9,7 +9,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PersistenceException;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.TypedQuery;
 
@@ -84,7 +83,7 @@ public class Account
             em.getTransaction().begin();
             em.persist(account);
             em.getTransaction().commit();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             // TODO: account already exists
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();
@@ -94,7 +93,7 @@ public class Account
         }
     }
 
-    public static Account read(DBContext db, String username)
+    public static Account loadByName(DBContext db, String username)
         throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
@@ -103,7 +102,7 @@ public class Account
             TypedQuery<Account> q = em.createQuery(JPQL, Account.class);
             q.setParameter("username", username);
             return q.getSingleResultOrNull();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {
             em.close();

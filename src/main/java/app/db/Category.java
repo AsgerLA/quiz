@@ -33,61 +33,31 @@ public class Category
     public static void create(DBContext db, Category category)
             throws DBException
     {
-        EntityManager em = db.emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            em.persist(category);
-            em.getTransaction().commit();
-        } catch (PersistenceException e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
-            throw new DBException(e.getMessage());
-        } finally {
-            em.close();
-        }
+        CRUD.create(db, category);
     }
 
     public static void delete(DBContext db, Category category)
             throws DBException
     {
-        EntityManager em = db.emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            em.persist(category);
-            em.getTransaction().commit();
-        } catch (PersistenceException e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
-            throw new DBException(e.getMessage());
-        } finally {
-            em.close();
-        }
+        CRUD.delete(db, category);
     }
 
     public static Category load(DBContext db, Integer id)
             throws DBException
     {
-        EntityManager em = db.emf.createEntityManager();
-        try {
-            return em.find(Category.class, id);
-        } catch (PersistenceException e) {
-            throw new DBException(e.getMessage());
-        } finally {
-            em.close();
-        }
+        return CRUD.read(db, Category.class, id);
     }
 
-    public static Category load(DBContext db, String name)
+    public static Category loadByName(DBContext db, String name)
             throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {
-            String JPQL =
-                "SELECT c FROM Category c JOIN c.tag t WHERE t.name=:name";
+            String JPQL = "SELECT c FROM Category c JOIN c.tag t WHERE t.name=:name";
             TypedQuery<Category> q = em.createQuery(JPQL, Category.class);
             q.setParameter("name", name);
             return q.getSingleResultOrNull();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -105,7 +75,7 @@ public class Category
             CriteriaQuery<Category> all = cq.select(rootEntry);
             TypedQuery<Category> allQuery = em.createQuery(all);
             return allQuery.getResultList();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();
             throw new DBException(e.getMessage());

@@ -90,7 +90,7 @@ public class Question
             TypedQuery<Question> q = em.createQuery(JPQL, Question.class);
             q.setParameter("quizId", quizId);
             return q.getResultList();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {
             em.close();

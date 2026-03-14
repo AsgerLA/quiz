@@ -81,7 +81,7 @@ public class Quiz
             em.getTransaction().begin();
             em.persist(quiz);
             em.getTransaction().commit();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();
             throw new DBException(e.getMessage());
@@ -101,7 +101,28 @@ public class Quiz
             quiz.modified = Instant.now();
             em.merge(quiz);
             em.getTransaction().commit();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
+            if (em.getTransaction().isActive())
+                em.getTransaction().rollback();
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    public static void updatePlayCount(DBContext db, Integer id)
+            throws DBException
+    {
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            String SQL =
+                "UPDATE quiz SET playCount = playCount + 1 WHERE id=:id";
+            Query q = em.createNativeQuery(SQL);
+            q.setParameter("id", id);
+            em.getTransaction().begin();
+            q.executeUpdate();
+            em.getTransaction().commit();
+        } catch (Exception e) {
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();
             throw new DBException(e.getMessage());
@@ -147,7 +168,7 @@ public class Quiz
             if (n != 1)
                 throw new PersistenceException("deleteTag(): updated "+n+" entities!");
             em.getTransaction().commit();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();
             throw new DBException(e.getMessage());
@@ -162,7 +183,7 @@ public class Quiz
         EntityManager em = db.emf.createEntityManager();
         try {
             return em.find(Quiz.class, id);
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -180,7 +201,7 @@ public class Quiz
             CriteriaQuery<Quiz> all = cq.select(rootEntry);
             TypedQuery<Quiz> allQuery = em.createQuery(all);
             return allQuery.getResultList();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -302,7 +323,7 @@ public class Quiz
             return q.getResultList();
         } catch (NumberFormatException e) {
             throw new InvalidParameterException(e);
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -324,7 +345,7 @@ public class Quiz
             q.setFirstResult(page*PAGE_SIZE);
             q.setMaxResults(PAGE_SIZE);
             return q.getResultList();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {
             em.close();

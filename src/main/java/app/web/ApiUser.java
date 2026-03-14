@@ -48,7 +48,7 @@ class ApiUser
         Account user;
 
         try {
-            user = Account.read(db, username);
+            user = Account.loadByName(db, username);
         } catch (DBException e) {
             throw new APIException(500, e);
         }

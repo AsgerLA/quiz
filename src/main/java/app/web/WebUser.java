@@ -69,7 +69,7 @@ class WebUser
         String json;
 
         try { // FIXME: authenticate user
-            account = Account.read(db, "Test_user");
+            account = Account.loadByName(db, "Test_user");
             id = Integer.parseInt(ctx.pathParam("id"));
         } catch (NumberFormatException|DBException e) {
             ctx.status(400);
@@ -88,7 +88,7 @@ class WebUser
         Account account;
 
         try { // FIXME: authenticate user
-            account = Account.read(db, "Test_user");
+            account = Account.loadByName(db, "Test_user");
         } catch (DBException e) {
             ctx.status(400);
             return;
@@ -107,7 +107,7 @@ class WebUser
         Account account;
 
         try { // FIXME: authenticate user
-            account = Account.read(db, "Test_user");
+            account = Account.loadByName(db, "Test_user");
         } catch (DBException e) {
             ctx.status(400);
             return;
@@ -126,7 +126,7 @@ class WebUser
         Integer id;
 
         try { // FIXME: authenticate user
-            account = Account.read(db, "Test_user");
+            account = Account.loadByName(db, "Test_user");
             id = Integer.parseInt(ctx.pathParam("id"));
         } catch (NumberFormatException|DBException e) {
             ctx.status(400);

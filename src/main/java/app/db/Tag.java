@@ -6,7 +6,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PersistenceException;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
@@ -50,7 +49,7 @@ public class Tag
             em.getTransaction().begin();
             em.persist(tag);
             em.getTransaction().commit();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();
             Tag tmp = Tag.loadByName(db, tag.name);
@@ -68,7 +67,7 @@ public class Tag
         EntityManager em = db.emf.createEntityManager();
         try {
             return em.find(Tag.class, id);
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -84,7 +83,7 @@ public class Tag
             TypedQuery<Tag> q = em.createQuery(JPQL, Tag.class);
             q.setParameter("name", name);
             return q.getSingleResult();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -104,7 +103,7 @@ public class Tag
             Query q = em.createNativeQuery(SQL);
             q.executeUpdate();
             em.getTransaction().commit();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();
             throw new DBException(e.getMessage());

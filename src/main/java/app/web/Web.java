@@ -3,13 +3,16 @@ package app.web;
 import app.db.DBContext;
 import io.javalin.Javalin;
 
-public class Web {
+public class Web
+{
 
-    public static Javalin newJavalinApp(DBContext db) {
+    public static Javalin newJavalinApp(DBContext db)
+    {
         WebQuiz webQuiz = new WebQuiz(db);
         WebCategory webCategory = new WebCategory(db);
         WebUser webUser = new WebUser(db);
         WebAdmin webAdmin = new WebAdmin(db);
+
         Javalin app = Javalin.create(config -> {
             // routes
             config.routes.apiBuilder(webQuiz.routes());
