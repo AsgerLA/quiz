@@ -2,6 +2,7 @@ package app.db;
 
 import java.security.InvalidParameterException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +25,7 @@ import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Subquery;
 
 @Entity
 public class Quiz
@@ -277,52 +275,61 @@ public class Quiz
                   sort.equals("rating"))) {
                 throw new InvalidParameterException("sort");
             }
-            CriteriaBuilder cb = em.getCriteriaBuilder();
-            CriteriaQuery<Quiz> cq = cb.createQuery(Quiz.class);
-            Root<Quiz> root = cq.from(Quiz.class);
-            Join<Quiz, Tag> join = root.join("tags");
-
-            Subquery<Category> sub = cq.subquery(Category.class);
-            Root<Category> subroot = sub.from(Category.class);
-
-            cq.select(root);
-            if (ownerId != null) {
-                Join<Quiz, Account> joinAccount = root.join("owner");
-                cq.where(cb.equal(joinAccount.get("id"), ownerId));
-            }
-            if (tag != null && category != null) {
-                Predicate p1 = null;
-                Predicate p2 = null;
-                Join<Category, Tag> join2 = subroot.join("tag");
-
-                sub.where(cb.equal(join2.get("name"), category));
-
-                p1 = cb.equal(join.get("name"), tag);
-                p2 = cb.exists(sub);
-
-                cq.where(cb.and(p1, p2));
-            } else if (tag != null) {
-                cq.where(cb.equal(join.get("name"), tag));
-            } else if (category != null) {
-                cq.where(cb.equal(join.get("name"), category));
-            }
-
-            if (order.equals("desc")) {
-                cq.orderBy(cb.desc(root.get(sort)));
-            } else if (order.equals("asc")) {
-                cq.orderBy(cb.asc(root.get(sort)));
-            } else {
+            if (!(order.equals("desc") ||
+                  order.equals("asc"))) {
                 throw new InvalidParameterException("order");
             }
+            StringBuilder sb = new StringBuilder();
 
-            TypedQuery<Quiz> q = em.createQuery(cq);
+            sb.append("SELECT quiz.id FROM quiz");
+            if (tag != null) {
+                Tag t = Tag.loadByName(db, tag);
+                if (t != null) {
+                    sb.append(
+        " JOIN quiz_tag ON quiz_tag.quiz_id=quiz.id WHERE quiz_tag.tags_id=");
+                    sb.append(t.id);
+                }
+            }
+            if (category != null) {
+                Tag t = Tag.loadByName(db, category);
+                if (t != null) {
+                    if (tag == null)
+                        sb.append(" WHERE");
+                    else
+                        sb.append(" AND");
+                    sb.append(
+    " EXISTS (SELECT category.id FROM category");
+                    sb.append(
+    " JOIN quiz_tag ON quiz_tag.quiz_id=quiz.id AND quiz_tag.tags_id=");
+                    sb.append(t.id);
+                    sb.append(" WHERE category.tag_id=");
+                    sb.append(t.id);
+                    sb.append(')');
+                }
+            }
+            sb.append(" ORDER BY ");
+            sb.append(sort);
+            sb.append(' ');
+            sb.append(order);
+            Query q = em.createNativeQuery(sb.toString());
             if (pageSize > PAGE_SIZE)
                 pageSize = PAGE_SIZE;
             q.setFirstResult(page * pageSize);
             q.setMaxResults(pageSize);
-            return q.getResultList();
+            List<Object> objects = q.getResultList();
+            List<Quiz> results = new ArrayList<>(objects.size());
+            Quiz quiz;
+            for (Object o : objects) {
+                quiz = new Quiz();
+                quiz.id = (Integer)o;
+                quiz = em.find(Quiz.class, quiz.id);
+                results.add(quiz);
+            }
+            return results;
         } catch (NumberFormatException e) {
             throw new InvalidParameterException(e);
+        } catch (InvalidParameterException e) {
+            throw e;
         } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {

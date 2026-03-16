@@ -93,6 +93,12 @@ public class Account
         }
     }
 
+    public static Account load(DBContext db, Integer id)
+            throws DBException
+    {
+        return CRUD.read(db, Account.class, id);
+    }
+
     public static Account loadByName(DBContext db, String username)
         throws DBException
     {
