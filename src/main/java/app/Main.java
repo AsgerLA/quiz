@@ -1,14 +1,13 @@
 package app;
 
 import app.db.DBContext;
-import app.db.DBException;
 import app.web.Web;
 import io.javalin.Javalin;
 
 public class Main
 {
     public static void main(String[] args)
-            throws DBException
+            throws Exception
     {
         String username = System.getenv("DB_USERNAME");
         String password = System.getenv("DB_PASSWORD");

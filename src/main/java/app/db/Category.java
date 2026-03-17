@@ -83,4 +83,40 @@ public class Category
             em.close();
         }
     }
+
+    public static List<Tag> loadSubTags(DBContext db, Integer id)
+            throws DBException
+    {
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            List<Object[]> results;
+            List<Tag> tags;
+            Tag tag;
+            String SQL = """
+                SELECT DISTINCT tag.id, tag.name FROM tag
+                JOIN quiz_tag ON quiz_tag.tags_id=tag.id
+                JOIN quiz ON quiz.id=quiz_tag.quiz_id
+                WHERE EXISTS (
+                        SELECT category.id FROM category
+                        JOIN quiz_tag ON quiz_tag.quiz_id=quiz.id
+                        WHERE quiz_tag.tags_id=:id
+                        )
+                """;
+            Query q = em.createNativeQuery(SQL);
+            q.setParameter("id", id);
+            results = q.getResultList();
+            tags = new ArrayList<>(results.size());
+            for (Object[] o : results) {
+                tag = new Tag();
+                tag.id = (Integer)o[0];
+                tag.name = (String)o[1];
+                tags.add(tag);
+            }
+            return tags;
+        } catch (Exception e) {
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
 }

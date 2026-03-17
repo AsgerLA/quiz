@@ -171,6 +171,7 @@ class ApiUser
             quiz.owner = user;
 
             Quiz.create(db, quiz);
+            new ThreadCacheWriter(db).start();
         } catch (JsonException e) {
             throw new APIException(400, e);
         } catch (DBException e) {
@@ -322,6 +323,8 @@ class ApiUser
 
             Quiz.update(db, quiz);
             Tag.gc(db);
+
+            new ThreadCacheWriter(db).start();
         } catch (JsonException e) {
             throw new APIException(400, e);
         } catch (DBException e) {
@@ -334,6 +337,8 @@ class ApiUser
     {
         try {
             Quiz.delete(db, user, id);
+
+            new ThreadCacheWriter(db).start();
         } catch (IllegalArgumentException e) {
             throw new APIException(403, e);
         } catch (DBException e) {

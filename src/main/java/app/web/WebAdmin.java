@@ -2,6 +2,7 @@ package app.web;
 
 import static io.javalin.apibuilder.ApiBuilder.beforeMatched;
 import static io.javalin.apibuilder.ApiBuilder.get;
+import static io.javalin.apibuilder.ApiBuilder.delete;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -32,6 +33,7 @@ class WebAdmin
         return () -> {
             beforeMatched("/api/admin*", this::ensureAdmin);
             get("/api/admin/metrics", this::GET_metrics);
+            delete("/api/admin/cache", this::DELETE_cache);
         };
     }
 
@@ -152,4 +154,9 @@ class WebAdmin
         ctx.json(json);
     }
 
+    void DELETE_cache(Context ctx)
+        throws APIException
+    {
+        ApiCategory.buildCache(db);
+    }
 }

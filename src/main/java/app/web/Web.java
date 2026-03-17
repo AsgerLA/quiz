@@ -7,6 +7,7 @@ public class Web
 {
 
     public static Javalin newJavalinApp(DBContext db)
+            throws APIException
     {
         WebQuiz webQuiz = new WebQuiz(db);
         WebCategory webCategory = new WebCategory(db);
