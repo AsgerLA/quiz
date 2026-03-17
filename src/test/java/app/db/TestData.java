@@ -37,7 +37,7 @@ public class TestData
             Tag.create(db, tag);
         }
 
-        Account account = new Account("Test_user");
+        Account account = new Account("Test_user", "password");
         Account.create(db, account);
 
         for (int quizIndex = 0;

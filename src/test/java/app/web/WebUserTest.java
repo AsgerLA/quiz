@@ -15,7 +15,8 @@ class WebUserTest
     {
         String JSON = """
         {
-            "username" : "Test_user2"
+            "username" : "Test_user2",
+            "password" : "password"
         }
         """;
 

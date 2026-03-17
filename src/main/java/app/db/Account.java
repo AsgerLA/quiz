@@ -3,6 +3,9 @@ package app.db;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
+import org.hibernate.exception.ConstraintViolationException;
+import org.mindrot.jbcrypt.BCrypt;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
@@ -22,14 +25,15 @@ public class Account
     @Column(nullable = false, unique = true, length = 16)
     public String username;
 
-    // TODO: password
+    String password;
 
     public Instant created;
 
     Account() {}
-    public Account(String username)
+    public Account(String username, String password)
     {
         this.username = username;
+        this.password = BCrypt.hashpw(password, BCrypt.gensalt(12));
     }
 
     /**
@@ -78,19 +82,7 @@ public class Account
     public static void create(DBContext db, Account account)
         throws DBException
     {
-        EntityManager em = db.emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            em.persist(account);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            // TODO: account already exists
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
-            throw new DBException(e.getMessage());
-        } finally {
-            em.close();
-        }
+        CRUD.create(db, account);
     }
 
     public static Account load(DBContext db, Integer id)
@@ -108,6 +100,50 @@ public class Account
             TypedQuery<Account> q = em.createQuery(JPQL, Account.class);
             q.setParameter("username", username);
             return q.getSingleResultOrNull();
+        } catch (Exception e) {
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    public static Integer signup(DBContext db, String username, String password)
+        throws DBException
+    {
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            Account account;
+            account = new Account(username, password);
+            em.getTransaction().begin();
+            em.persist(account);
+            em.getTransaction().commit();
+            return account.id;
+        } catch (ConstraintViolationException e) {
+            return null;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive())
+                em.getTransaction().rollback();
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    public static Account signin(DBContext db, String username, String password)
+        throws DBException
+    {
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            Account account;
+            String JPQL = "SELECT a FROM Account a WHERE a.username=:username";
+            TypedQuery<Account> q = em.createQuery(JPQL, Account.class);
+            q.setParameter("username", username);
+            account = q.getSingleResultOrNull();
+            if (account == null)
+                return null;
+            if (!BCrypt.checkpw(password, account.password))
+                return null;
+            return account;
         } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {

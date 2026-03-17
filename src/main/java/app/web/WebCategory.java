@@ -2,11 +2,7 @@ package app.web;
 
 import static io.javalin.apibuilder.ApiBuilder.get;
 
-import java.util.List;
-
-import app.db.Category;
 import app.db.DBContext;
-import app.db.DBException;
 import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
 

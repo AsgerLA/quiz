@@ -18,6 +18,7 @@
         <logback-classic>1.5.27</logback-classic>
         <org.slf4j>2.0.17</org.slf4j>
         <javalin-version>7.0.1</javalin-version>
+        <jbcrypt.version>0.4</jbcrypt.version>
         <hamcrest.version>3.0</hamcrest.version>
         <rest-assured.version>6.0.0</rest-assured.version>
     </properties>
@@ -39,6 +40,14 @@
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-hikaricp</artifactId>
             <version>${hibernate-version}</version>
+        </dependency>
+
+        <!-- password hashing -->
+        <dependency>
+          <groupId>org.mindrot</groupId>
+          <artifactId>jbcrypt</artifactId>
+          <version>${jbcrypt.version}</version>
+          <scope>compile</scope>
         </dependency>
 
         <!-- http -->

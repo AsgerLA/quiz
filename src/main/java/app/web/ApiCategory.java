@@ -29,28 +29,13 @@ class ApiCategory
     static String get(DBContext db)
             throws APIException
     {
-        String json;
-
-        json = cacheJson;
-        if (json == null) {
-            cacheStart(db);
-            json = cacheJson;
-        }
-        return json;
+        return cacheJson;
     }
 
     static String getCategory(DBContext db, String category)
             throws APIException
     {
-        String json;
-
-        json = cache.get(category);
-        if (json == null) {
-            cacheCategory(db, category);
-            json = cache.get(category);
-        }
-
-        return json;
+        return cache.get(category);
     }
 
     private static void addSection(JsonBuilder jb, String name, List<Quiz> quizzes)

@@ -21,8 +21,8 @@ class ApiUser
             throws APIException
     {
         JsonObject jo;
-        Account account;
         String username;
+        String password;
 
         try {
             jo = JsonParser.decodeObject(json);
@@ -30,10 +30,11 @@ class ApiUser
             username = jo.getString("username");
             if (!Account.verifyUsername(username))
                 throw new APIException(400, "bad username");
+            password = jo.getString("password");
 
-            account = new Account(username);
-
-            Account.create(db, account);
+            if (Account.signup(db, username, password) == null) {
+                throw new APIException(409, "username taken");
+            }
         } catch (JsonException e) {
             throw new APIException(400, e);
         } catch (DBException e) {

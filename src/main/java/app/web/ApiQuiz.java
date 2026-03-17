@@ -1,12 +1,9 @@
 package app.web;
 
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import app.db.Category;
 import app.db.DBContext;
 import app.db.DBException;
 import app.db.Quiz;
@@ -15,7 +12,6 @@ import app.web.json.JsonBuilder;
 
 class ApiQuiz
 {
-
     static String toJson(Quiz quiz)
     {
         JsonBuilder jb = new JsonBuilder();
