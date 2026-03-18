@@ -1,11 +1,11 @@
 package app.web;
 
 import app.db.DBContext;
+import app.web.json.JsonBuilder;
 import io.javalin.Javalin;
 
 public class Web
 {
-
     public static Javalin newJavalinApp(DBContext db)
             throws APIException
     {
@@ -21,7 +21,15 @@ public class Web
             config.routes.apiBuilder(webUser.routes());
             config.routes.apiBuilder(webAdmin.routes());
             config.router.handlerWrapper(webAdmin::wrapper);
-            // exception handling
+            // error handling
+            config.routes.error(404, ctx -> {
+                JsonBuilder jb = new JsonBuilder();
+                jb.objectBegin();
+                    jb.field("status", 404);
+                    jb.field("message", "Not Found");
+                jb.objectEnd();
+                ctx.json(jb.build());
+            });
             config.routes.exception(Exception.class, (e, ctx) -> {
                 e.printStackTrace();
                 ctx.status(500);

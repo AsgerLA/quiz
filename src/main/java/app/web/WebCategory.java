@@ -30,6 +30,9 @@ class WebCategory
         String json;
 
         json = ApiCategory.get(db);
+        if (json == null) {
+            throw new APIException(404, "unknown category");
+        }
 
         ctx.json(json);
     }
@@ -42,6 +45,9 @@ class WebCategory
 
         category = ctx.pathParam("category");
         json = ApiCategory.getCategory(db, category);
+        if (json == null) {
+            throw new APIException(404, "unknown category");
+        }
 
         ctx.json(json);
     }

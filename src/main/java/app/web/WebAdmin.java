@@ -1,20 +1,16 @@
 package app.web;
 
 import static io.javalin.apibuilder.ApiBuilder.beforeMatched;
-import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.delete;
+import static io.javalin.apibuilder.ApiBuilder.get;
+import static io.javalin.apibuilder.ApiBuilder.post;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.RuntimeMXBean;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 
 import app.db.DBContext;
-import app.web.json.JsonBuilder;
 import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -34,31 +30,22 @@ class WebAdmin
             beforeMatched("/api/admin*", this::ensureAdmin);
             get("/api/admin/metrics", this::GET_metrics);
             delete("/api/admin/cache", this::DELETE_cache);
+            post("/api/admin/category", this::POST_category);
+            delete("/api/admin/category", this::DELETE_category);
         };
     }
 
-    static class MetricData
-    {
-        long time;
-        int  hits;
-    }
     private Map<String, MetricData> metrics = new HashMap<>();
-    private ReentrantLock lock = new ReentrantLock();
 
-    void putMetric(String key, long starttime, int status)
+    synchronized void putMetric(String key, long starttime)
     {
-        lock.lock();
-        try {
-            MetricData data = metrics.get(key);
-            if (data == null)
-                data = new MetricData();
-            data.hits++;
+        MetricData data = metrics.get(key);
+        if (data == null)
+            data = new MetricData();
+        data.hits++;
 
-            data.time += System.nanoTime() - starttime;
-            metrics.put(key, data);
-        } finally {
-            lock.unlock();
-        }
+        data.time += System.nanoTime() - starttime;
+        metrics.put(key, data);
     }
 
     Handler wrapper(Endpoint endpoint)
@@ -68,9 +55,8 @@ class WebAdmin
                 long starttime = System.nanoTime();
 
                 endpoint.handler.handle(ctx);
-
-                String key = endpoint.method.toString()+" "+ctx.path();
-                putMetric(key, starttime, ctx.status().getCode());
+                String key = endpoint.method.toString()+" "+endpoint.path;
+                putMetric(key, starttime);
             };
         }
         return endpoint.handler;
@@ -119,44 +105,37 @@ class WebAdmin
     void GET_metrics(Context ctx)
     {
         String json;
-        Runtime rt = Runtime.getRuntime();
-        OperatingSystemMXBean osbean = ManagementFactory.getOperatingSystemMXBean();
-        RuntimeMXBean rtbean = ManagementFactory.getRuntimeMXBean();
 
-        JsonBuilder jb = new JsonBuilder();
-
-        jb.objectBegin();
-
-        // memory
-        jb.field("total", rt.totalMemory());
-        jb.field("free", rt.freeMemory());
-
-        // cpu
-        jb.field("load_average", osbean.getSystemLoadAverage());
-
-        jb.field("uptime", rtbean.getUptime());
-
-        jb.objectBegin("routes");
-        for (Map.Entry<String, MetricData> entry : metrics.entrySet()) {
-            MetricData data = entry.getValue();
-            jb.objectBegin(entry.getKey());
-            jb.field("time", data.time/1000_000.0);
-            jb.field("hits", data.hits);
-            jb.field("avg", (data.time/data.hits)/1000_000.0);
-            jb.objectEnd();
-        }
-        jb.objectEnd();
-
-        jb.objectEnd();
-
-        json = jb.build();
+        json = ApiAdmin.getMetrics(metrics);
 
         ctx.json(json);
     }
 
     void DELETE_cache(Context ctx)
-        throws APIException
+            throws APIException
     {
         ApiCategory.buildCache(db);
+    }
+
+    void POST_category(Context ctx)
+            throws APIException
+    {
+        String json;
+
+        json = ctx.body();
+        ApiAdmin.postCategory(db, json);
+
+        ctx.status(201);
+    }
+
+    void DELETE_category(Context ctx)
+            throws APIException
+    {
+        String json;
+
+        json = ctx.body();
+        ApiAdmin.deleteCategory(db, json);
+
+        ctx.status(204);
     }
 }

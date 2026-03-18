@@ -67,7 +67,7 @@ class ApiQuiz
 
             quiz = Quiz.load(db, id);
             if (quiz == null)
-                throw new APIException(404, "not found");
+                throw new APIException(404, "Not Found");
 
             return toJson(quiz);
         } catch (DBException e) {

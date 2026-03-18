@@ -81,8 +81,7 @@ class WebQuiz
         try {
             ownerId = Integer.parseInt(ctx.pathParam("id"));
         } catch (NumberFormatException e) {
-            ctx.status(404);
-            return;
+            throw new APIException(400, "id must be an integer");
         }
 
         query = ctx.queryParamMap();
@@ -100,8 +99,7 @@ class WebQuiz
         try {
             id = Integer.parseInt(ctx.pathParam("id"));
         } catch (NumberFormatException e) {
-            ctx.status(404);
-            return;
+            throw new APIException(400, "id must be an integer");
         }
 
         json = ApiQuiz.get(db, id);

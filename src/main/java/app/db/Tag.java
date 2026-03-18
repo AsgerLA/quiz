@@ -99,7 +99,10 @@ public class Tag
             String SQL =
                 "DELETE FROM tag WHERE NOT EXISTS "+
                 "(SELECT quiz_tag.tags_id FROM quiz_tag "+
-                "WHERE quiz_tag.tags_id=tag.id)";
+                "WHERE quiz_tag.tags_id=tag.id) "+
+                "AND NOT EXISTS "+
+                "(SELECT category.id FROM category "+
+                "WHERE category.tag_id=tag.id)";
             Query q = em.createNativeQuery(SQL);
             q.executeUpdate();
             em.getTransaction().commit();

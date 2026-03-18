@@ -56,6 +56,7 @@ public class Category
             String JPQL = "SELECT c FROM Category c JOIN c.tag t WHERE t.name=:name";
             TypedQuery<Category> q = em.createQuery(JPQL, Category.class);
             q.setParameter("name", name);
+            q.setMaxResults(1);
             return q.getSingleResultOrNull();
         } catch (Exception e) {
             throw new DBException(e.getMessage());

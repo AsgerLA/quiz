@@ -2,7 +2,7 @@ package app.web.json;
 
 public class JsonBuilder
 {
-    StringBuilder sb = new StringBuilder();
+    StringBuilder sb = new StringBuilder(1024);
 
     public void objectBegin()
     {

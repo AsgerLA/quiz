@@ -51,8 +51,7 @@ class WebUser
 
         username = ctx.pathParam("username");
         if (username.charAt(0) != '@') {
-            ctx.status(404);
-            return;
+            throw new APIException(404, "Not Found");
         }
         username = username.substring(1, username.length());
 
@@ -72,8 +71,7 @@ class WebUser
             account = Account.loadByName(db, "Test_user");
             id = Integer.parseInt(ctx.pathParam("id"));
         } catch (NumberFormatException|DBException e) {
-            ctx.status(400);
-            return;
+            throw new APIException(400, e);
         }
 
         json = ApiUser.getQuiz(db, account, id);
@@ -90,8 +88,7 @@ class WebUser
         try { // FIXME: authenticate user
             account = Account.loadByName(db, "Test_user");
         } catch (DBException e) {
-            ctx.status(400);
-            return;
+            throw new APIException(500, e);
         }
 
         json = ctx.body();
@@ -109,8 +106,7 @@ class WebUser
         try { // FIXME: authenticate user
             account = Account.loadByName(db, "Test_user");
         } catch (DBException e) {
-            ctx.status(400);
-            return;
+            throw new APIException(500, e);
         }
 
         json = ctx.body();
@@ -129,8 +125,7 @@ class WebUser
             account = Account.loadByName(db, "Test_user");
             id = Integer.parseInt(ctx.pathParam("id"));
         } catch (NumberFormatException|DBException e) {
-            ctx.status(400);
-            return;
+            throw new APIException(400, e);
         }
 
         ApiUser.deleteQuiz(db, account, id);
