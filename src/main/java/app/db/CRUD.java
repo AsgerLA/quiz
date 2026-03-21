@@ -21,7 +21,7 @@ class CRUD
         }
     }
 
-    public static <T> T read(DBContext db, Class<T> clazz, Integer id)
+    static <T> T read(DBContext db, Class<T> clazz, Integer id)
             throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
@@ -34,7 +34,7 @@ class CRUD
         }
     }
 
-    public static void update(DBContext db, Object o)
+    static void update(DBContext db, Object o)
             throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
@@ -51,7 +51,7 @@ class CRUD
         }
     }
 
-    public static void delete(DBContext db, Object o)
+    static void delete(DBContext db, Object o)
             throws DBException
     {
         EntityManager em = db.emf.createEntityManager();

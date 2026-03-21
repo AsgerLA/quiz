@@ -63,7 +63,10 @@ public class JsonParser
     private final StringBuilder sb;
 
     private JsonParser(String json)
+        throws JsonException
     {
+        if (json == null)
+            throw new JsonException("JSON text is null");
         sb = new StringBuilder();
         text = json;
         at = 0;

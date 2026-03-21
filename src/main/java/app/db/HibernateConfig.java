@@ -11,18 +11,7 @@ import java.util.Properties;
 
 class HibernateConfig
 {
-        private HibernateConfig() {
-        }
-
-        private static void registerEntities(Configuration configuration) {
-            configuration.addAnnotatedClass(Quiz.class);
-            configuration.addAnnotatedClass(Question.class);
-            configuration.addAnnotatedClass(Answer.class);
-            configuration.addAnnotatedClass(Category.class);
-            configuration.addAnnotatedClass(Tag.class);
-            configuration.addAnnotatedClass(Account.class);
-            // TODO: Add more entities here...
-        }
+        private HibernateConfig() {}
 
         static EntityManagerFactory createEntityManagerFactory(Properties props)
         {
@@ -49,4 +38,13 @@ class HibernateConfig
             return emf;
         }
 
+        private static void registerEntities(Configuration configuration) {
+            configuration.addAnnotatedClass(Quiz.class);
+            configuration.addAnnotatedClass(Question.class);
+            configuration.addAnnotatedClass(Answer.class);
+            configuration.addAnnotatedClass(Category.class);
+            configuration.addAnnotatedClass(Tag.class);
+            configuration.addAnnotatedClass(Account.class);
+            // TODO: Add more entities here...
+        }
     }

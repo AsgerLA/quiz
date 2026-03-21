@@ -29,7 +29,7 @@ public class Account
 
     public Instant created;
 
-    Account() {}
+    public Account() {}
     public Account(String username, String password)
     {
         this.username = username;

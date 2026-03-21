@@ -16,6 +16,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -41,6 +42,7 @@ public class Quiz
     public Instant modified;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false)
     public Account owner;
 
     public int playCount;
@@ -129,18 +131,21 @@ public class Quiz
         }
     }
 
-    public static void delete(DBContext db, Account owner, Integer id)
-        throws DBException, IllegalArgumentException
+    public static boolean delete(DBContext db, Account owner, Integer id)
+        throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {
             Quiz quiz;
             quiz = em.find(Quiz.class, id);
+            if (quiz == null)
+                return false;
             if (owner != null && quiz.owner.id != owner.id)
-                throw new IllegalArgumentException("bad owner");
+                return false;
             em.getTransaction().begin();
             em.remove(quiz);
             em.getTransaction().commit();
+            return true;
         } catch (Exception e) {
             if (em.getTransaction().isActive())
                 em.getTransaction().rollback();
@@ -226,9 +231,14 @@ public class Quiz
         }
 
         public QueryParam(Map<String, List<String>> query)
+                throws InvalidParameterException
         {
-            pageSize = 10;
-            page = Integer.parseInt(getQueryParam("page", "1", query));
+            try {
+                pageSize = Integer.parseInt(getQueryParam("pages", "10", query));
+                page = Integer.parseInt(getQueryParam("page", "1", query));
+            } catch (NumberFormatException e) {
+                throw new InvalidParameterException(e);
+            }
             sort = getQueryParam("sort", "title", query);
             order = getQueryParam("order", "asc", query);
             tag = getQueryParam("tag", null, query);
@@ -322,7 +332,7 @@ public class Quiz
             for (Object o : objects) {
                 quiz = new Quiz();
                 quiz.id = (Integer)o;
-                quiz = em.find(Quiz.class, quiz.id);
+                quiz = Quiz.load(db, quiz.id);
                 results.add(quiz);
             }
             return results;
@@ -340,6 +350,10 @@ public class Quiz
     public static List<Quiz> loadBySearch(DBContext db, String search, int page)
             throws DBException
     {
+        if (search == null)
+            return null;
+        if (--page < 0)
+            page = 0;
         EntityManager em = db.emf.createEntityManager();
         try {
             String JPQL = "SELECT q FROM Quiz q JOIN q.tags t WHERE q.title LIKE :search1 OR t.name LIKE :search2";
@@ -347,8 +361,6 @@ public class Quiz
             search = "%" + search + "%";
             q.setParameter("search1", search);
             q.setParameter("search2", search);
-            if (--page < 0)
-                page = 0;
             q.setFirstResult(page*PAGE_SIZE);
             q.setMaxResults(PAGE_SIZE);
             return q.getResultList();
