@@ -47,6 +47,8 @@ public class DBContext
         }
     }
 
+    EntityManagerFactory emf;
+
     private static Properties defaultProps()
     {
         Properties props = new Properties();
@@ -62,6 +64,4 @@ public class DBContext
         props.put("hibernate.hbm2ddl.auto", "update");
         return props;
     }
-
-    EntityManagerFactory emf;
 }

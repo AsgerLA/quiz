@@ -2,8 +2,6 @@ package app.web;
 
 import static io.javalin.apibuilder.ApiBuilder.post;
 
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.Date;
 
 import com.nimbusds.jose.JOSEException;
@@ -31,11 +29,7 @@ class WebSecurity
     WebSecurity(DBContext db)
     {
         this.db = db;
-
-        SecureRandom random = new SecureRandom();
-        byte bytes[] = new byte[32];
-        random.nextBytes(bytes);
-        SECRET_KEY = Base64.getEncoder().encodeToString(bytes);
+        SECRET_KEY = System.getenv("SECRET_KEY");
     }
     private DBContext db;
     private final String SECRET_KEY;
@@ -50,38 +44,25 @@ class WebSecurity
 
     boolean authorize(Context ctx, boolean requireAdmin)
     {
-        String header;
         String token;
         String subject;
-        int i;
 
-        header = ctx.header("Authorization");
-        if (header == null) {
-            Result.error(ctx, 401, "missing Authorization header");
+        token = getToken(ctx);
+        if (authorizeAdmin(token)) {
+            return true;
+        } else if (requireAdmin) {
+            Result.notFound(ctx);
             return false;
         }
 
-        i = 0;
-        while (i < header.length() && header.charAt(i) != ' ')
-            i++;
-        if (i+1 >= header.length()) {
-            Result.error(ctx, 401, "malformed Authorization header");
+        if (token == null) {
+            Result.error(ctx, 401, "bad Authorization header");
             return false;
         }
-
-        token = header.substring(i+1, header.length());
 
         subject = verifyJWT(token, SECRET_KEY);
         if (subject == null) {
             Result.error(ctx, 401, "token invalid");
-            return false;
-        }
-
-        if (subject.equals("admin"))
-            return true;
-
-        if (requireAdmin) {
-            Result.notFound(ctx);
             return false;
         }
 
@@ -94,6 +75,40 @@ class WebSecurity
 
         ctx.attribute("account", account);
         return true;
+    }
+
+    boolean authorizeAdmin(String token)
+    {
+        if (token == null)
+            return false;
+
+        return token.equals(SECRET_KEY);
+    }
+
+    private String getToken(Context ctx)
+    {
+        int i;
+        String header;
+        String token;
+        String type;
+
+        header = ctx.header("Authorization");
+        if (header == null)
+            return null;
+
+        i = 0;
+        while (i < header.length() && header.charAt(i) != ' ')
+            i++;
+        if (i+1 >= header.length()) {
+            return null;
+        }
+        type = header.substring(0, i);
+        if (!type.equals("Bearer"))
+            return null;
+
+        token = header.substring(i+1, header.length());
+
+        return token;
     }
 
     private static Integer parseInt(String s)
@@ -209,12 +224,12 @@ class WebSecurity
                 return null;
 
             if (claims.getExpirationTime().getTime()
-                    - new Date().getTime() > 0)
+                    - new Date().getTime() < 0)
                 return null;
 
             return claims.getSubject();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 }

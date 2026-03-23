@@ -52,7 +52,8 @@ public class TestData
                  questionIndex < numQuestions;
                  questionIndex++) {
                 Question q;
-                q = new Question(quiz, "question " + questionIndex, questionIndex);
+                q = new Question(quiz, "question " + questionIndex,
+                                 questionIndex, Question.Type.SINGLE);
                 q.answers.add(new Answer(q, "answer1", 1, 0));
                 q.answers.add(new Answer(q, "answer2", 0, 1));
 

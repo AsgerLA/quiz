@@ -21,6 +21,14 @@ public class Question
     @Column(nullable = false)
     public int slot;
 
+    public enum Type
+    {
+        SINGLE,
+        MULTI,
+    }
+
+    public Type type;
+
     @OneToMany(mappedBy = "question", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     public Set<Answer> answers = new HashSet<>();
 
@@ -28,11 +36,12 @@ public class Question
     Quiz quiz;
 
     public Question() {}
-    public Question(Quiz quiz, String question, int slot)
+    public Question(Quiz quiz, String question, int slot, Type type)
     {
         this.quiz = quiz;
         this.question = question;
         this.slot = slot;
+        this.type = type;
     }
 
     @Override
@@ -81,7 +90,9 @@ public class Question
         return CRUD.read(db, Question.class, id);
     }
 
-    public static List<Question> loadByQuizId(DBContext db, int quizId)
+    public static List<Question> loadByQuizId(DBContext db,
+                                              int quizId,
+                                              boolean shuffle)
             throws DBException
     {
         EntityManager em = db.emf.createEntityManager();

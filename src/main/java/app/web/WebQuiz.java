@@ -157,6 +157,10 @@ class WebQuiz
             return;
 
         account = ctx.attribute("account");
+        if (account == null) {
+            Result.error(ctx, 403, "requires an account");
+            return;
+        }
         json = ctx.body();
         if (json == null) {
             Result.error(ctx, 400, "missing JSON body");
@@ -316,10 +320,19 @@ class WebQuiz
         ja = jo.getJsonArray("questions");
         for (i = 0; i < ja.size(); i++) {
             JsonObject tmp = ja.getJsonObject(i);
+            Question.Type type;
+
+            try {
+                type = Question.Type.valueOf(tmp.getString("type"));
+            } catch (IllegalArgumentException e) {
+                throw new JsonException("Invalid value for type");
+            }
+
             Question question = new Question(
                     quiz,
                     tmp.getString("question"),
-                    tmp.getInt("slot"));
+                    tmp.getInt("slot"),
+                    type);
             id = jo.get("id");
             if (id instanceof Number)
                 question.id = ((Number)id).intValue();
