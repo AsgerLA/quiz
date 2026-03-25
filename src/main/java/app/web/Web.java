@@ -10,7 +10,7 @@ public class Web
         WebSecurity webSecurity = new WebSecurity(db);
         WebQuiz webQuiz = new WebQuiz(db, webSecurity);
         WebCategory webCategory = new WebCategory(db, webSecurity);
-        WebUser webUser = new WebUser(db);
+        WebAccount webAccount = new WebAccount(db);
         WebMetric webMetric = new WebMetric(db, webSecurity);
 
         Javalin app = Javalin.create(config -> {
@@ -19,7 +19,7 @@ public class Web
             config.routes.apiBuilder(webSecurity.routes());
             config.routes.apiBuilder(webQuiz.routes());
             config.routes.apiBuilder(webCategory.routes());
-            config.routes.apiBuilder(webUser.routes());
+            config.routes.apiBuilder(webAccount.routes());
             config.routes.apiBuilder(webMetric.routes());
             config.router.handlerWrapper(webMetric::wrapper);
             // error handling

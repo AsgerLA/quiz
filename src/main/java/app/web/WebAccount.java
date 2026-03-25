@@ -8,9 +8,9 @@ import app.web.json.JsonBuilder;
 import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
 
-class WebUser
+class WebAccount
 {
-    WebUser(DBContext db)
+    WebAccount(DBContext db)
     {
         this.db = db;
     }
@@ -19,11 +19,11 @@ class WebUser
     EndpointGroup routes()
     {
         return () -> {
-            get("/api/user/{username}", this::GET_user);
+            get("/api/account/{username}", this::GET_account);
         };
     }
 
-    void GET_user(Context ctx)
+    void GET_account(Context ctx)
     {
         String username;
         Account account;

@@ -203,17 +203,35 @@ public class Quiz
         }
     }
 
-    public static List<Quiz> loadAll(DBContext db)
+    private static final int TOP_COUNT = 8;
+    public static List<Quiz> loadTopByTag(DBContext db, String tagName)
             throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {
-            CriteriaBuilder cb = em.getCriteriaBuilder();
-            CriteriaQuery<Quiz> cq = cb.createQuery(Quiz.class);
-            Root<Quiz> rootEntry = cq.from(Quiz.class);
-            CriteriaQuery<Quiz> all = cq.select(rootEntry);
-            TypedQuery<Quiz> allQuery = em.createQuery(all);
-            return allQuery.getResultList();
+            String JPQL =
+                "SELECT q FROM Quiz q JOIN q.tags t WHERE t.name=:name";
+            TypedQuery<Quiz> q = em.createQuery(JPQL, Quiz.class);
+            q.setMaxResults(TOP_COUNT);
+            q.setParameter("name", tagName);
+            return q.getResultList();
+        } catch (Exception e) {
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    static List<Quiz> loadTopByAttribute(DBContext db, String attrName)
+            throws DBException
+    {
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            String JPQL =
+                "SELECT q FROM Quiz q ORDER BY q."+attrName+" ASC";
+            TypedQuery<Quiz> tq = em.createQuery(JPQL, Quiz.class);
+            tq.setMaxResults(TOP_COUNT);
+            return tq.getResultList();
         } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {

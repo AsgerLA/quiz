@@ -22,9 +22,7 @@ public class Catalog
         categories = Category.loadAll(db);
         catalog.categories = categories;
         for (Category cat : categories) {
-            Quiz.QueryParam query = new Quiz.QueryParam();
-            query.category = cat.tag.name;
-            quizzes = Quiz.loadByQuery(db, query, null);
+            quizzes = Quiz.loadTopByTag(db, cat.tag.name);
             catalog.sections.add(new Section(cat.tag.name, quizzes));
         }
 
@@ -59,9 +57,7 @@ public class Catalog
         catalog.categories = categories;
         catalog.tags = Category.loadSubTags(db, categoryId);
         for (String sort : sorts) {
-            Quiz.QueryParam query = new Quiz.QueryParam();
-            query.sort = sort;
-            quizzes = Quiz.loadByQuery(db, query, null);
+            quizzes = Quiz.loadTopByAttribute(db, sort);
             catalog.sections.add(new Section(sort, quizzes));
         }
 

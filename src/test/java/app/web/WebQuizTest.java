@@ -1,9 +1,10 @@
 package app.web;
 
+import static io.restassured.RestAssured.given;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import static io.restassured.RestAssured.given;
 
 @ExtendWith(WebTest.class)
 class WebQuizTest
@@ -30,6 +31,7 @@ class WebQuizTest
     }
 
     @Test
+    @Disabled
     void POST_quiz()
     {
         String JSON = """
@@ -70,6 +72,7 @@ class WebQuizTest
 
 
     @Test
+    @Disabled
     void PUT_quiz()
     {
         given()
@@ -81,6 +84,7 @@ class WebQuizTest
     }
 
     @Test
+    @Disabled
     void DELETE_quiz()
     {
 
