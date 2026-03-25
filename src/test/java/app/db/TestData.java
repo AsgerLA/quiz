@@ -26,7 +26,7 @@ public class TestData
         Tag[] tags = new Tag[] {
             new Tag("test"),
             new Tag("quiz"),
-            new Tag("user tag"),
+            new Tag("usertag"),
         };
 
         for (Tag tag : cattags) {
@@ -43,7 +43,7 @@ public class TestData
         for (int quizIndex = 0;
              quizIndex < NUM_QUIZZES;
              quizIndex++) {
-            quizzes[quizIndex] = new Quiz("Test Quiz");
+            quizzes[quizIndex] = new Quiz("Test Quiz", "A quiz for testing");
             Quiz quiz = quizzes[quizIndex];
             quiz.owner = account;
 

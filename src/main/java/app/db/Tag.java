@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
@@ -25,6 +26,13 @@ public class Tag
         this.name = name;
     }
 
+    @PrePersist
+    void prePersist()
+    {
+        if (!Validator.verifyTag(name))
+            throw new DBException("invalid tag name");
+    }
+
     @Override
     public int hashCode()
     {
@@ -42,7 +50,7 @@ public class Tag
     }
 
     public static void create(DBContext db, Tag tag)
-        throws DBException
+            throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {
@@ -62,7 +70,7 @@ public class Tag
     }
 
     public static Tag load(DBContext db, Integer id)
-        throws DBException
+            throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {
@@ -75,14 +83,14 @@ public class Tag
     }
 
     public static Tag loadByName(DBContext db, String name)
-        throws DBException
+            throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {
             String JPQL = "SELECT t FROM Tag t WHERE t.name = :name";
             TypedQuery<Tag> q = em.createQuery(JPQL, Tag.class);
             q.setParameter("name", name);
-            return q.getSingleResult();
+            return q.getSingleResultOrNull();
         } catch (Exception e) {
             throw new DBException(e.getMessage());
         } finally {
@@ -91,7 +99,7 @@ public class Tag
     }
 
     public static void gc(DBContext db)
-        throws DBException
+            throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {

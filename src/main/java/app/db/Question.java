@@ -1,8 +1,6 @@
 package app.db;
 
-
 import jakarta.persistence.*;
-
 
 import java.util.HashSet;
 import java.util.List;

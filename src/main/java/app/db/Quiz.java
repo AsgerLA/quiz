@@ -22,6 +22,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -37,6 +38,9 @@ public class Quiz
 
     @Column(nullable = false)
     public String title;
+
+    @Column(nullable = false)
+    public String description;
 
     public Instant created;
     public Instant modified;
@@ -59,9 +63,10 @@ public class Quiz
     public Set<Tag> tags = new HashSet<>();
 
     public Quiz() {}
-    public Quiz(String title)
+    public Quiz(String title, String description)
     {
         this.title = title;
+        this.description = description;
     }
 
     @PrePersist
@@ -69,6 +74,12 @@ public class Quiz
     {
         created = Instant.now();
         modified = created;
+    }
+
+    @PreUpdate
+    void preUpdate()
+    {
+        modified = Instant.now();
     }
 
     public static void create(DBContext db, Quiz quiz)
@@ -98,7 +109,6 @@ public class Quiz
             for (Tag tag : quiz.tags)
                 Tag.create(db, tag);
             em.getTransaction().begin();
-            quiz.modified = Instant.now();
             em.merge(quiz);
             em.getTransaction().commit();
         } catch (Exception e) {

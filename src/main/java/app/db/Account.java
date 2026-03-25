@@ -44,38 +44,18 @@ public class Account
      */
     public static boolean verifyUsername(String username)
     {
-        int at;
-        char c;
-
-        username = new String(username.getBytes(), StandardCharsets.UTF_8);
         if (username.length() < 4 ||
             username.length() >= 16)
             return false;
-        if (!isalpha(username.charAt(0)))
-            return false;
-        for (at = 1; at < username.length(); at++) {
-            c = username.charAt(at);
-            if (!isalpha(c) && !isdigit(c))
-                return false;
-        }
-        return true;
-    }
 
-    private static boolean isdigit(char c)
-    {
-        return (c >= '0' && c <= '9');
-    }
-
-    private static boolean isalpha(char c)
-    {
-        return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-                (c == '_') ||
-                (c >= 0xc0 && c <= 0xff && c != 0xf7 && c != 0xd7));
+        return Validator.verifyTag(username);
     }
 
     @PrePersist
     void prePersist()
     {
+        if (!verifyUsername(username))
+            throw new DBException("invalid username");
         created = Instant.now();
     }
 

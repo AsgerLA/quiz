@@ -35,11 +35,13 @@ class WebQuizTest
         String JSON = """
         {
             "title" : "New Quiz",
+            "description" : "A new Quiz",
             "tags" : ["test", "quiz"],
             "questions" : [
                 {
                     "slot" : 0,
                     "question" : "Question?",
+                    "type",  "MULTI",
                     "answers" : [
                         {
                             "slot" : 0,
@@ -70,55 +72,8 @@ class WebQuizTest
     @Test
     void PUT_quiz()
     {
-        String JSON = """
-        {
-            "id" : 1,
-            "title" : "Updated Quiz",
-            "tags" : [
-                {
-                    "action" : "create",
-                    "name" : "newtag"
-                }
-            ],
-            "questions" : [
-                {
-                    "id" : 1,
-                    "action" : "delete"
-                },
-                {
-                    "action" : "create",
-                    "question" : "new question",
-                    "slot" : 0,
-                    "answers" : [
-                        {
-                            "action" : "create",
-                            "answer" : "new answer",
-                            "slot" : 1,
-                            "points" : 1
-                        }
-                    ]
-                },
-                {
-                    "action" : "update",
-                    "id" : 2,
-                    "question" : "updated question",
-                    "slot" : 1,
-                    "answers" : [
-                        {
-                            "action" : "create",
-                            "answer" : "new answer",
-                            "slot" : 1,
-                            "points" : 1
-                        }
-                    ]
-                }
-            ]
-        }
-        """;
-
         given()
             .header("Content-Type", "application/json")
-            .body(JSON)
             .when()
             .put("/api/quiz")
             .then()

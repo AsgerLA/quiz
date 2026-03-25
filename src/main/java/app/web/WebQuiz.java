@@ -1,9 +1,9 @@
 package app.web;
 
+import static io.javalin.apibuilder.ApiBuilder.delete;
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
 import static io.javalin.apibuilder.ApiBuilder.put;
-import static io.javalin.apibuilder.ApiBuilder.delete;
 
 import java.security.InvalidParameterException;
 import java.util.List;
@@ -268,6 +268,7 @@ class WebQuiz
     {
         jb.field("id", quiz.id);
         jb.field("title", quiz.title);
+        jb.field("description", quiz.description);
         jb.field("playCount", quiz.playCount);
         jb.field("voteAverage", quiz.voteAverage);
         jb.field("created", quiz.created.toString());
@@ -306,7 +307,7 @@ class WebQuiz
 
         jo = JsonParser.decodeObject(json);
 
-        quiz = new Quiz(jo.getString("title"));
+        quiz = new Quiz(jo.getString("title"), jo.getString("description"));
         id = jo.get("id");
         if (id instanceof Number)
             quiz.id = ((Number)id).intValue();
