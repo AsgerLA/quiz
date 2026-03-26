@@ -58,8 +58,7 @@ public class Tag
             em.persist(tag);
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             Tag tmp = Tag.loadByName(db, tag.name);
             if (tmp == null)
                 throw new DBException(e.getMessage());
@@ -115,8 +114,7 @@ public class Tag
             q.executeUpdate();
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();

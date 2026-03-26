@@ -1,11 +1,10 @@
 package app.db;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
 import org.hibernate.exception.ConstraintViolationException;
-import org.mindrot.jbcrypt.BCrypt;
 
+import app.security.PasswordUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
@@ -22,18 +21,19 @@ public class Account
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer id;
 
-    @Column(nullable = false, unique = true, length = 16)
+    @Column(nullable = false, unique = true, length = 32)
     public String username;
 
     String password;
 
     public Instant created;
+    public Instant lastlogin;
 
     public Account() {}
     public Account(String username, String password)
     {
         this.username = username;
-        this.password = BCrypt.hashpw(password, BCrypt.gensalt(12));
+        this.password = PasswordUtil.hashpw(password);
     }
 
     /**
@@ -45,7 +45,7 @@ public class Account
     public static boolean verifyUsername(String username)
     {
         if (username.length() < 4 ||
-            username.length() >= 16)
+            username.length() >= 30)
             return false;
 
         return Validator.verifyTag(username);
@@ -101,8 +101,7 @@ public class Account
         } catch (ConstraintViolationException e) {
             return null;
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -121,8 +120,9 @@ public class Account
             account = q.getSingleResultOrNull();
             if (account == null)
                 return null;
-            if (!BCrypt.checkpw(password, account.password))
+            if (!PasswordUtil.verifypw(password, account.password))
                 return null;
+            account.lastlogin = Instant.now();
             return account;
         } catch (Exception e) {
             throw new DBException(e.getMessage());

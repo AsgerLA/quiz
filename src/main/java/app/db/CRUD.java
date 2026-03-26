@@ -13,8 +13,7 @@ class CRUD
             em.persist(o);
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -43,8 +42,7 @@ class CRUD
             em.merge(o);
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -60,8 +58,7 @@ class CRUD
             em.remove(o);
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();

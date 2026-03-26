@@ -19,6 +19,11 @@ public class Catalog
 
         catalog = new Catalog();
 
+        for (String sort : sorts) {
+            quizzes = Quiz.loadTopByAttribute(db, sort);
+            catalog.sections.add(new Section(sort, quizzes));
+        }
+
         categories = Category.loadAll(db);
         catalog.categories = categories;
         for (Category cat : categories) {
@@ -32,7 +37,7 @@ public class Catalog
     private static final String[] sorts = new String[] {
         "playCount",
         "created",
-        "rating"
+        "vote"
     };
     public static Catalog loadByCategory(DBContext db, String categoryName)
             throws DBException
@@ -57,7 +62,7 @@ public class Catalog
         catalog.categories = categories;
         catalog.tags = Category.loadSubTags(db, categoryId);
         for (String sort : sorts) {
-            quizzes = Quiz.loadTopByAttribute(db, sort);
+            quizzes = Quiz.loadTopByAttributeWithTag(db, categoryName, sort);
             catalog.sections.add(new Section(sort, quizzes));
         }
 

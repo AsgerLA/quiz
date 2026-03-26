@@ -77,8 +77,7 @@ public class Category
             TypedQuery<Category> allQuery = em.createQuery(all);
             return allQuery.getResultList();
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -93,6 +92,7 @@ public class Category
             List<Object[]> results;
             List<Tag> tags;
             Tag tag;
+
             String SQL = """
                 SELECT DISTINCT tag.id, tag.name FROM tag
                 JOIN quiz_tag ON quiz_tag.tags_id=tag.id

@@ -32,42 +32,4 @@ public class Answer
     {
         return slot;
     }
-
-    public static void create(DBContext db, Answer answer)
-            throws DBException
-    {
-        CRUD.create(db, answer);
-    }
-
-    public static void update(DBContext db, Answer answer)
-            throws DBException
-    {
-        CRUD.update(db, answer);
-    }
-
-    public static void delete(DBContext db, Integer id)
-        throws DBException
-    {
-        EntityManager em = db.emf.createEntityManager();
-        try {
-            String SQL = "DELETE FROM answer WHERE answer.id=:id";
-            Query q = em.createNativeQuery(SQL);
-            q.setParameter("id", id);
-            em.getTransaction().begin();
-            q.executeUpdate();
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
-            throw new DBException(e.getMessage());
-        } finally {
-            em.close();
-        }
-    }
-
-    public static Answer load(DBContext db, Integer id)
-            throws DBException
-    {
-        return CRUD.read(db, Answer.class, id);
-    }
 }

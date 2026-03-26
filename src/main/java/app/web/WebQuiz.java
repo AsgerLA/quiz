@@ -270,9 +270,9 @@ class WebQuiz
         jb.field("title", quiz.title);
         jb.field("description", quiz.description);
         jb.field("playCount", quiz.playCount);
-        jb.field("voteAverage", quiz.voteAverage);
+        jb.field("vote", quiz.vote);
         jb.field("created", quiz.created.toString());
-        jb.field("owner", quiz.owner.username);
+        jb.field("owner", (Object)WebAccount.toJson(quiz.owner));
         jb.arrayBegin("tags");
         for (Tag tag : quiz.tags)
             jb.value(tag.name);

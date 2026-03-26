@@ -25,9 +25,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 
 @Entity
 public class Quiz
@@ -49,12 +46,11 @@ public class Quiz
     @JoinColumn(nullable = false)
     public Account owner;
 
+    public boolean hidden;
+
     public int playCount;
 
-    public int voteCount;
-    public float voteAverage;
-
-    public float rating;
+    public int vote;
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
     public Set<Question> questions = new HashSet<>();
@@ -93,8 +89,7 @@ public class Quiz
             em.persist(quiz);
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -112,8 +107,7 @@ public class Quiz
             em.merge(quiz);
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -125,16 +119,36 @@ public class Quiz
     {
         EntityManager em = db.emf.createEntityManager();
         try {
-            String SQL =
-                "UPDATE quiz SET playCount = playCount + 1 WHERE id=:id";
-            Query q = em.createNativeQuery(SQL);
+            String JPQL =
+                "UPDATE Quiz q SET q.playCount = q.playCount + 1 WHERE q.id=:id";
+            Query q = em.createQuery(JPQL);
             q.setParameter("id", id);
             em.getTransaction().begin();
             q.executeUpdate();
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    public static void updateVote(DBContext db, boolean down, Integer id)
+            throws DBException
+    {
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            int inc = down ? -1 : 1;
+            String JPQL =
+                "UPDATE Quiz q SET q.vote = q.vote + "+inc+" WHERE q.id=:id";
+            Query q = em.createQuery(JPQL);
+            q.setParameter("id", id);
+            em.getTransaction().begin();
+            q.executeUpdate();
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -157,8 +171,7 @@ public class Quiz
             em.getTransaction().commit();
             return true;
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -182,8 +195,7 @@ public class Quiz
                 throw new PersistenceException("deleteTag(): updated "+n+" entities!");
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
+            em.getTransaction().rollback();
             throw new DBException(e.getMessage());
         } finally {
             em.close();
@@ -230,6 +242,26 @@ public class Quiz
             String JPQL =
                 "SELECT q FROM Quiz q ORDER BY q."+attrName+" ASC";
             TypedQuery<Quiz> tq = em.createQuery(JPQL, Quiz.class);
+            tq.setMaxResults(TOP_COUNT);
+            return tq.getResultList();
+        } catch (Exception e) {
+            throw new DBException(e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    static List<Quiz> loadTopByAttributeWithTag(DBContext db,
+                                                String tagName,
+                                                String attrName)
+            throws DBException
+    {
+        EntityManager em = db.emf.createEntityManager();
+        try {
+            String JPQL =
+                "SELECT q FROM Quiz q JOIN q.tags t WHERE t.name=:name ORDER BY q."+attrName+" ASC";
+            TypedQuery<Quiz> tq = em.createQuery(JPQL, Quiz.class);
+            tq.setParameter("name", tagName);
             tq.setMaxResults(TOP_COUNT);
             return tq.getResultList();
         } catch (Exception e) {
@@ -310,7 +342,7 @@ public class Quiz
             if (!(sort.equals("title") ||
                   sort.equals("created") ||
                   sort.equals("playCount") ||
-                  sort.equals("rating"))) {
+                  sort.equals("vote"))) {
                 throw new InvalidParameterException("sort");
             }
             if (!(order.equals("desc") ||
@@ -384,7 +416,8 @@ public class Quiz
             page = 0;
         EntityManager em = db.emf.createEntityManager();
         try {
-            String JPQL = "SELECT q FROM Quiz q JOIN q.tags t WHERE q.title LIKE :search1 OR t.name LIKE :search2";
+            String JPQL =
+                "SELECT q FROM Quiz q JOIN q.tags t WHERE q.title LIKE :search1 OR t.name LIKE :search2";
             TypedQuery<Quiz> q = em.createQuery(JPQL, Quiz.class);
             search = "%" + search + "%";
             q.setParameter("search1", search);
