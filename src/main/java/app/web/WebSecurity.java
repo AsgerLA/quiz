@@ -14,10 +14,10 @@ import io.javalin.http.Context;
 
 class WebSecurity
 {
-    WebSecurity(DBContext db)
+    WebSecurity(DBContext db, String secret)
     {
         this.db = db;
-        SECRET_KEY = System.getenv("SECRET_KEY");
+        SECRET_KEY = secret;
     }
     private DBContext db;
     private final String SECRET_KEY;

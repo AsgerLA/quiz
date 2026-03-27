@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class WebQuizTest
 {
     @Test
-    public void GET_quiz()
+    void GET_quiz()
     {
         given()
             .when()
@@ -20,7 +20,7 @@ class WebQuizTest
     }
 
     @Test
-    public void GET_quiz_id()
+    void GET_quiz_id()
     {
 
         given()
@@ -31,7 +31,6 @@ class WebQuizTest
     }
 
     @Test
-    @Disabled
     void POST_quiz()
     {
         String JSON = """
@@ -39,11 +38,12 @@ class WebQuizTest
             "title" : "New Quiz",
             "description" : "A new Quiz",
             "tags" : ["test", "quiz"],
+            "hidden" : true,
             "questions" : [
                 {
                     "slot" : 0,
                     "question" : "Question?",
-                    "type",  "MULTI",
+                    "type" : "MULTI",
                     "answers" : [
                         {
                             "slot" : 0,
@@ -63,6 +63,7 @@ class WebQuizTest
 
         given()
             .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer "+WebTest.JWT_TOKEN)
             .body(JSON)
             .when()
             .post("/api/quiz")
@@ -70,25 +71,11 @@ class WebQuizTest
             .statusCode(204);
     }
 
-
     @Test
-    @Disabled
-    void PUT_quiz()
-    {
-        given()
-            .header("Content-Type", "application/json")
-            .when()
-            .put("/api/quiz")
-            .then()
-            .statusCode(204);
-    }
-
-    @Test
-    @Disabled
     void DELETE_quiz()
     {
-
         given()
+            .header("Authorization", "Bearer "+WebTest.JWT_TOKEN)
             .when()
             .delete("/api/quiz/2")
             .then()

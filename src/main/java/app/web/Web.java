@@ -5,9 +5,9 @@ import io.javalin.Javalin;
 
 public class Web
 {
-    public static Javalin newJavalinApp(DBContext db)
+    public static Javalin newJavalinApp(DBContext db, String secret)
     {
-        WebSecurity webSecurity = new WebSecurity(db);
+        WebSecurity webSecurity = new WebSecurity(db, secret);
         WebQuiz webQuiz = new WebQuiz(db, webSecurity);
         WebCategory webCategory = new WebCategory(db, webSecurity);
         WebAccount webAccount = new WebAccount(db);

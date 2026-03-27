@@ -3,7 +3,6 @@ package app.web;
 import static io.javalin.apibuilder.ApiBuilder.delete;
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
-import static io.javalin.apibuilder.ApiBuilder.put;
 
 import java.security.InvalidParameterException;
 import java.util.List;
@@ -42,7 +41,6 @@ class WebQuiz
             get("/api/quiz/{id}", this::GET_quiz_id);
             post("/api/quiz", this::POST_quiz);
             delete("/api/quiz/{id}", this::DELETE_quiz);
-            put("/api/quiz", this::PUT_quiz);
         };
     }
 
@@ -179,14 +177,6 @@ class WebQuiz
         Result.noContent(ctx);
     }
 
-    void PUT_quiz(Context ctx)
-    {
-        if (!security.authorize(ctx, false))
-            return;
-
-        ctx.status(501);
-    }
-
     void DELETE_quiz(Context ctx)
     {
         Account account;
@@ -202,10 +192,7 @@ class WebQuiz
             return;
         }
 
-        if (!Quiz.delete(db, account, id)) {
-            Result.notFound(ctx);
-            return;
-        }
+        Quiz.delete(db, account, id);
 
         Result.noContent(ctx);
     }
@@ -261,6 +248,8 @@ class WebQuiz
         }
         jb.arrayEnd();
 
+        jb.objectEnd();
+
         return jb.build();
     }
 
@@ -283,7 +272,8 @@ class WebQuiz
     {
         jb.field("id", question.id);
         jb.field("question", question.question);
-        jb.field("slot", question.question);
+        jb.field("slot", question.slot);
+        jb.field("type", question.type);
         jb.arrayBegin("answers");
         for (Answer answer : question.answers) {
             jb.objectBegin();
@@ -301,16 +291,13 @@ class WebQuiz
     {
         JsonObject jo;
         JsonArray ja;
-        Object id;
         Quiz quiz;
         int i;
 
         jo = JsonParser.decodeObject(json);
 
         quiz = new Quiz(jo.getString("title"), jo.getString("description"));
-        id = jo.get("id");
-        if (id instanceof Number)
-            quiz.id = ((Number)id).intValue();
+        quiz.hidden = jo.getBoolean("hidden");
 
         ja = jo.getJsonArray("tags");
         for (i = 0; i < ja.size(); i++) {
@@ -334,9 +321,6 @@ class WebQuiz
                     tmp.getString("question"),
                     tmp.getInt("slot"),
                     type);
-            id = jo.get("id");
-            if (id instanceof Number)
-                question.id = ((Number)id).intValue();
             JsonArray answerJA = tmp.getJsonArray("answers");
             for (int j = 0; j < answerJA.size(); j++) {
                 JsonObject answerJO = answerJA.getJsonObject(i);

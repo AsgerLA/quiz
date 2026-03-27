@@ -96,32 +96,15 @@ public class Quiz
         }
     }
 
-    public static void update(DBContext db, Quiz quiz)
-            throws DBException
-    {
-        EntityManager em = db.emf.createEntityManager();
-        try {
-            for (Tag tag : quiz.tags)
-                Tag.create(db, tag);
-            em.getTransaction().begin();
-            em.merge(quiz);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            em.getTransaction().rollback();
-            throw new DBException(e.getMessage());
-        } finally {
-            em.close();
-        }
-    }
-
-    public static void updatePlayCount(DBContext db, Integer id)
+    public static void updatePlayCount(DBContext db, int count, Integer id)
             throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {
             String JPQL =
-                "UPDATE Quiz q SET q.playCount = q.playCount + 1 WHERE q.id=:id";
+                "UPDATE Quiz q SET q.playCount = q.playCount + :count WHERE q.id=:id";
             Query q = em.createQuery(JPQL);
+            q.setParameter("count", count);
             q.setParameter("id", id);
             em.getTransaction().begin();
             q.executeUpdate();
@@ -155,21 +138,20 @@ public class Quiz
         }
     }
 
-    public static boolean delete(DBContext db, Account owner, Integer id)
-        throws DBException
+    public static void delete(DBContext db, Account owner, Integer id)
+            throws DBException
     {
         EntityManager em = db.emf.createEntityManager();
         try {
             Quiz quiz;
             quiz = em.find(Quiz.class, id);
             if (quiz == null)
-                return false;
+                return;
             if (owner != null && quiz.owner.id != owner.id)
-                return false;
+                return;
             em.getTransaction().begin();
             em.remove(quiz);
             em.getTransaction().commit();
-            return true;
         } catch (Exception e) {
             em.getTransaction().rollback();
             throw new DBException(e.getMessage());

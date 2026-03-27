@@ -21,7 +21,7 @@ class QuizTest
         throws DBException
     {
         Quiz quiz;
-        Quiz.updatePlayCount(DBTest.db, 1);
+        Quiz.updatePlayCount(DBTest.db, 1, 1);
         quiz = Quiz.load(DBTest.db, 1);
         assertEquals(1, quiz.playCount);
     }
